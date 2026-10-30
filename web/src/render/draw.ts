@@ -3,13 +3,12 @@ import { enemyTypes } from "../sim/enemies";
 import type { Settings } from "../sim/settings";
 import { pylonCenter } from "../sim/step";
 import type { Bug, GameState, Vec } from "../sim/types";
+import { withAlpha, type Palette } from "./palette";
 import { fitViewport, type Viewport } from "./viewport";
 
-const CYAN = "#29f3ff";
-const MAGENTA = "#ff2bd6";
 const GRID = 40;
 
-export type Renderer = { draw(state: GameState, now: number, fx: Effects): void; viewport(): Viewport };
+export type Renderer = { draw(state: GameState, now: number, fx: Effects, palette: Palette): void; viewport(): Viewport };
 
 export function createRenderer(canvas: HTMLCanvasElement, settings: Settings): Renderer {
   const ctx = canvas.getContext("2d")!;
@@ -28,7 +27,7 @@ export function createRenderer(canvas: HTMLCanvasElement, settings: Settings): R
 
   return {
     viewport: () => view,
-    draw(state, now, fx) {
+    draw(state, now, fx, palette) {
       resize();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = "#000";
@@ -36,12 +35,12 @@ export function createRenderer(canvas: HTMLCanvasElement, settings: Settings): R
       ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.offsetX * dpr, view.offsetY * dpr);
       const shake = shakeOffset(fx, settings);
       ctx.translate(shake.x, shake.y);
-      drawArena(ctx, settings);
-      drawPylon(ctx, state, settings, now, fx.pylonPulse / settings.fx.pylonPulseSeconds);
-      for (const bug of state.bugs) drawBug(ctx, bug, state.tick, pylonCenter(settings), fx.hitFlashes.has(bug.id));
-      drawParticles(ctx, fx);
-      drawBullets(ctx, state);
-      drawDrone(ctx, state, settings, fx.muzzleFlash / settings.fx.muzzleFlashSeconds);
+      drawArena(ctx, settings, palette);
+      drawPylon(ctx, state, settings, palette, now, fx.pylonPulse / settings.fx.pylonPulseSeconds);
+      for (const bug of state.bugs) drawBug(ctx, bug, palette, state.tick, pylonCenter(settings), fx.hitFlashes.has(bug.id));
+      drawParticles(ctx, fx, palette);
+      drawBullets(ctx, state, palette);
+      drawDrone(ctx, state, settings, palette, fx.muzzleFlash / settings.fx.muzzleFlashSeconds);
     },
   };
 }
@@ -51,12 +50,12 @@ function glow(ctx: CanvasRenderingContext2D, color: string, blur: number): void 
   ctx.shadowBlur = blur;
 }
 
-function drawArena(ctx: CanvasRenderingContext2D, settings: Settings): void {
+function drawArena(ctx: CanvasRenderingContext2D, settings: Settings, palette: Palette): void {
   const { width, height } = settings.arena;
   ctx.shadowBlur = 0;
   ctx.fillStyle = "#04050c";
   ctx.fillRect(0, 0, width, height);
-  ctx.strokeStyle = "rgba(41, 243, 255, 0.07)";
+  ctx.strokeStyle = withAlpha(palette.drone, 0.07);
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (let x = GRID; x < width; x += GRID) {
@@ -68,25 +67,25 @@ function drawArena(ctx: CanvasRenderingContext2D, settings: Settings): void {
     ctx.lineTo(width, y);
   }
   ctx.stroke();
-  glow(ctx, CYAN, 14);
-  ctx.strokeStyle = "rgba(41, 243, 255, 0.6)";
+  glow(ctx, palette.drone, 14);
+  ctx.strokeStyle = withAlpha(palette.drone, 0.6);
   ctx.lineWidth = 2;
   ctx.strokeRect(1, 1, width - 2, height - 2);
 }
 
 /** `hit` runs from 1 at a pylon hit down to 0. */
-function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Settings, now: number, hit: number): void {
+function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Settings, palette: Palette, now: number, hit: number): void {
   const c = pylonCenter(settings);
   const r = settings.pylon.radius;
   const health = state.integrity / settings.pylon.maxIntegrity;
   const pulse = 0.5 + 0.5 * Math.sin(now / 260);
-  const ringColor = health > 0.5 ? CYAN : health > 0.25 ? "#ffd23f" : "#ff3b5c";
+  const ringColor = health > 0.5 ? palette.health.ok : health > 0.25 ? palette.health.warn : palette.health.low;
 
   ctx.save();
   ctx.translate(c.x, c.y);
-  glow(ctx, MAGENTA, 30 + pulse * 20 + hit * 60);
-  ctx.fillStyle = `rgba(255, 43, 214, ${0.18 + hit * 0.3})`;
-  ctx.strokeStyle = MAGENTA;
+  glow(ctx, palette.pylon, 30 + pulse * 20 + hit * 60);
+  ctx.fillStyle = withAlpha(palette.pylon, 0.18 + hit * 0.3);
+  ctx.strokeStyle = palette.pylon;
   ctx.lineWidth = 3;
   ctx.beginPath();
   for (let i = 0; i < 6; i++) {
@@ -97,7 +96,7 @@ function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
   ctx.fill();
   ctx.stroke();
 
-  ctx.fillStyle = "#ffd6f6";
+  ctx.fillStyle = palette.pylonCore;
   ctx.beginPath();
   ctx.arc(0, 0, r * (0.28 + pulse * 0.06), 0, Math.PI * 2);
   ctx.fill();
@@ -116,8 +115,8 @@ function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
   ctx.stroke();
 
   if (hit > 0) {
-    glow(ctx, MAGENTA, 24);
-    ctx.strokeStyle = `rgba(255, 43, 214, ${hit})`;
+    glow(ctx, palette.pylon, 24);
+    ctx.strokeStyle = withAlpha(palette.pylon, hit);
     ctx.lineWidth = 2 + hit * 3;
     ctx.beginPath();
     ctx.arc(0, 0, ringR + (1 - hit) * 90, 0, Math.PI * 2);
@@ -126,7 +125,7 @@ function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
   ctx.restore();
 }
 
-function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, tick: number, target: Vec, flash: boolean): void {
+function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, palette: Palette, tick: number, target: Vec, flash: boolean): void {
   const type = enemyTypes[bug.kind];
   const r = type.radius;
   const heading = Math.atan2(target.y - bug.pos.y, target.x - bug.pos.x);
@@ -135,7 +134,7 @@ function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, tick: number, target: 
   ctx.save();
   ctx.translate(bug.pos.x, bug.pos.y);
   ctx.rotate(heading);
-  const color = flash ? "#ffffff" : type.color;
+  const color = flash ? "#ffffff" : palette.enemies[bug.kind];
   glow(ctx, color, flash ? 28 : bug.latched ? 22 : 12);
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
@@ -165,13 +164,13 @@ function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, tick: number, target: 
 }
 
 /** Additive blending lets overlapping sparks bloom; a faint halo stands in for shadowBlur, which is slow per particle. */
-function drawParticles(ctx: CanvasRenderingContext2D, fx: Effects): void {
+function drawParticles(ctx: CanvasRenderingContext2D, fx: Effects, palette: Palette): void {
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.shadowBlur = 0;
   for (const p of fx.particles) {
     const fade = 1 - p.age / p.life;
-    ctx.fillStyle = p.color;
+    ctx.fillStyle = p.tint === "white" ? "#ffffff" : palette.enemies[p.tint];
     ctx.globalAlpha = fade * 0.25;
     ctx.beginPath();
     ctx.arc(p.pos.x, p.pos.y, p.size * 2.5, 0, Math.PI * 2);
@@ -184,9 +183,9 @@ function drawParticles(ctx: CanvasRenderingContext2D, fx: Effects): void {
   ctx.restore();
 }
 
-function drawBullets(ctx: CanvasRenderingContext2D, state: GameState): void {
-  glow(ctx, "#fff27a", 12);
-  ctx.strokeStyle = "#fff9c4";
+function drawBullets(ctx: CanvasRenderingContext2D, state: GameState, palette: Palette): void {
+  glow(ctx, palette.bulletGlow, 12);
+  ctx.strokeStyle = palette.bullet;
   ctx.lineWidth = 3;
   ctx.lineCap = "round";
   ctx.beginPath();
@@ -198,14 +197,14 @@ function drawBullets(ctx: CanvasRenderingContext2D, state: GameState): void {
 }
 
 /** `muzzle` runs from 1 at a shot down to 0. */
-function drawDrone(ctx: CanvasRenderingContext2D, state: GameState, settings: Settings, muzzle: number): void {
+function drawDrone(ctx: CanvasRenderingContext2D, state: GameState, settings: Settings, palette: Palette, muzzle: number): void {
   const { pos, aim } = state.drone;
   const r = settings.drone.radius;
   ctx.save();
   ctx.translate(pos.x, pos.y);
 
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = "rgba(41, 243, 255, 0.25)";
+  ctx.strokeStyle = withAlpha(palette.drone, 0.25);
   ctx.lineWidth = 1;
   ctx.setLineDash([4, 8]);
   ctx.beginPath();
@@ -215,8 +214,8 @@ function drawDrone(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
   ctx.setLineDash([]);
 
   ctx.rotate(Math.atan2(aim.y, aim.x));
-  glow(ctx, CYAN, 18);
-  ctx.strokeStyle = CYAN;
+  glow(ctx, palette.drone, 18);
+  ctx.strokeStyle = palette.drone;
   ctx.lineWidth = 4;
   ctx.lineCap = "round";
   ctx.beginPath();
@@ -224,7 +223,7 @@ function drawDrone(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
   ctx.lineTo(r + 6, 0);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(41, 243, 255, 0.2)";
+  ctx.fillStyle = withAlpha(palette.drone, 0.2);
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(r, 0);
@@ -237,9 +236,9 @@ function drawDrone(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
 
   if (muzzle > 0) {
     const tip = r + 6;
-    glow(ctx, "#fff27a", 24);
+    glow(ctx, palette.bulletGlow, 24);
     ctx.globalAlpha = muzzle;
-    ctx.fillStyle = "#fffbe0";
+    ctx.fillStyle = palette.muzzle;
     ctx.beginPath();
     ctx.moveTo(tip, -5);
     ctx.lineTo(tip + 20, 0);

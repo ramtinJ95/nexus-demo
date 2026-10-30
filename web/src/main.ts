@@ -4,6 +4,7 @@ import { createEffects, frameEffects } from "./fx/effects";
 import { createHud } from "./hud";
 import { createInput } from "./input";
 import { createRenderer } from "./render/draw";
+import { palettes } from "./render/palette";
 import { seedFromString } from "./sim/rng";
 import { defaultSettings } from "./sim/settings";
 import type { GameEvent } from "./sim/types";
@@ -49,7 +50,7 @@ const game = startGame({
     frameEffects(fx, fxEvents, Math.min(Math.max(0, (now - (lastFrame ?? now)) / 1000), MAX_FX_SECONDS), settings);
     fxEvents = [];
     lastFrame = now;
-    renderer.draw(state, now, fx);
+    renderer.draw(state, now, fx, palettes.neon);
     hud.update(state);
     const shaking = String(fx.trauma > 0);
     if (root.dataset.shake !== shaking) root.dataset.shake = shaking;
