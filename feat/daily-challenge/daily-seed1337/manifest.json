@@ -1,0 +1,92 @@
+{
+  "journey": "daily",
+  "feature": "daily.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:46387/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "seeded CLASSIC on the classic board",
+      "ok": true
+    },
+    {
+      "claim": "seeded DAILY-1 on the 2026-10-30 board",
+      "ok": true
+    },
+    {
+      "claim": "seeded YESTERDAY on the 2026-10-29 board",
+      "ok": true
+    },
+    {
+      "claim": "the title screen offers today's daily challenge by its UTC date",
+      "ok": true
+    },
+    {
+      "claim": "the run is in daily mode",
+      "ok": true
+    },
+    {
+      "claim": "the HUD shows DAILY and the date",
+      "ok": true
+    },
+    {
+      "claim": "the daily seed 13790493 replaces the URL seed 1337",
+      "ok": true
+    },
+    {
+      "claim": "a second player later the same UTC day gets the same seed 13790493",
+      "ok": true
+    },
+    {
+      "claim": "a player on 2026-10-31 gets a different seed 4291980170",
+      "ok": true
+    },
+    {
+      "claim": "the board is titled with the day",
+      "ok": true
+    },
+    {
+      "claim": "the panel shows the daily board",
+      "ok": true
+    },
+    {
+      "claim": "the player's row is highlighted with the final score",
+      "ok": true
+    },
+    {
+      "claim": "the board lists today's rival",
+      "ok": true
+    },
+    {
+      "claim": "the board leaves out the classic board and yesterday's board",
+      "ok": true
+    },
+    {
+      "claim": "GET /api/scores?day=2026-10-30 lists the run",
+      "ok": true
+    },
+    {
+      "claim": "GET /api/scores, the classic board, does not list the daily run",
+      "ok": true
+    },
+    {
+      "claim": "R restarts the same daily challenge",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-title.png",
+    "02-daily-run.png",
+    "03-daily-board.png",
+    "04-daily-restart.png",
+    "board.json",
+    "classic-scores.json",
+    "daily-scores.json",
+    "daily.gif",
+    "daily.mp4",
+    "daily.webm"
+  ],
+  "capturedAt": "2026-10-30T13:31:56.034Z"
+}
