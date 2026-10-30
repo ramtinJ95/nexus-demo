@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defaultSettings, type Settings } from "../sim/settings";
 import type { GameEvent } from "../sim/types";
-import { advanceEffects, applyEvent, createEffects, shakeOffset, type Effects } from "./effects";
+import { advanceEffects, applyEvent, createEffects, frameEffects, shakeOffset, type Effects } from "./effects";
 
 const settings = defaultSettings;
 const reduced: Settings = { ...settings, fx: { ...settings.fx, reducedMotion: true } };
@@ -62,6 +62,16 @@ describe("effects", () => {
     expect(fx.muzzleFlash).toBeGreaterThan(0);
     advance(fx, settings.fx.muzzleFlashSeconds + frame);
     expect(fx.muzzleFlash).toBe(0);
+  });
+
+  it("a flash from this frame's events survives a frame longer than its lifetime", () => {
+    const fx = createEffects(1);
+    frameEffects(fx, [shot, hit], 0.2, settings);
+    expect(fx.muzzleFlash).toBe(settings.fx.muzzleFlashSeconds);
+    expect(fx.hitFlashes.get(7)).toBe(settings.fx.hitFlashSeconds);
+    frameEffects(fx, [], 0.2, settings);
+    expect(fx.muzzleFlash).toBe(0);
+    expect(fx.hitFlashes.has(7)).toBe(false);
   });
 
   it("reduced motion drops shake and flashes but keeps particles and the pylon pulse", () => {

@@ -1,11 +1,12 @@
 import "./style.css";
 import { startGame } from "./game";
-import { advanceEffects, applyEvent, createEffects } from "./fx/effects";
+import { createEffects, frameEffects } from "./fx/effects";
 import { createHud } from "./hud";
 import { createInput } from "./input";
 import { createRenderer } from "./render/draw";
 import { seedFromString } from "./sim/rng";
 import { defaultSettings } from "./sim/settings";
+import type { GameEvent } from "./sim/types";
 
 function resolveSeed(): number {
   const url = new URL(window.location.href);
@@ -35,6 +36,7 @@ const input = createInput(canvas, renderer.viewport);
 const hud = createHud(root, settings);
 
 let fx = createEffects(seed);
+let fxEvents: GameEvent[] = [];
 let lastFrame: number | undefined;
 root.dataset.reducedMotion = String(reducedMotion);
 root.dataset.shake = "false";
@@ -44,7 +46,8 @@ const game = startGame({
   settings,
   readInput: input.read,
   onFrame(state, now) {
-    advanceEffects(fx, Math.min(Math.max(0, (now - (lastFrame ?? now)) / 1000), MAX_FX_SECONDS), settings);
+    frameEffects(fx, fxEvents, Math.min(Math.max(0, (now - (lastFrame ?? now)) / 1000), MAX_FX_SECONDS), settings);
+    fxEvents = [];
     lastFrame = now;
     renderer.draw(state, now, fx);
     hud.update(state);
@@ -54,12 +57,13 @@ const game = startGame({
 });
 
 for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit"] as const) {
-  game.on(type, (event) => applyEvent(fx, event, settings));
+  game.on(type, (event) => fxEvents.push(event));
 }
 
 function restart(): void {
   game.restart();
   fx = createEffects(seed);
+  fxEvents = [];
 }
 
 root.querySelector('[data-testid="restart"]')!.addEventListener("click", restart);

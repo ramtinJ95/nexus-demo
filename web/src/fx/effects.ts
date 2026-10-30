@@ -91,6 +91,12 @@ export function advanceEffects(fx: Effects, dt: number, settings: Settings): voi
   }
 }
 
+/** One rendered frame: age what was already on screen, then add this frame's events so they render at full strength. */
+export function frameEffects(fx: Effects, events: readonly GameEvent[], dt: number, settings: Settings): void {
+  advanceEffects(fx, dt, settings);
+  for (const event of events) applyEvent(fx, event, settings);
+}
+
 /** Arena-unit camera offset. Two incommensurate sines wobble smoothly where random jitter would strobe. */
 export function shakeOffset(fx: Effects, settings: Settings): Vec {
   if (fx.trauma <= 0) return { x: 0, y: 0 };
