@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import { journeys } from "./journeys/index.ts";
+import { prepareRunDir } from "./run-dir.ts";
 import { down, isAlive, readStack, repoRoot, up, verifyDir, type Stack } from "./stack.ts";
 
 const usage = `verify.ts <command>
@@ -74,9 +75,7 @@ async function capture(name: string, seed: string, runName: string): Promise<str
   const journey = journeys[name];
   if (!journey) throw new Error(`unknown journey ${name}. Known: ${Object.keys(journeys).join(", ")}`);
   const stack = requireStack();
-  const out = join(verifyDir, "runs", runName);
-  rmSync(out, { recursive: true, force: true });
-  mkdirSync(out, { recursive: true });
+  const out = prepareRunDir(join(verifyDir, "runs"), runName);
 
   const checks: { claim: string; ok: boolean }[] = [];
   const pageErrors: string[] = [];

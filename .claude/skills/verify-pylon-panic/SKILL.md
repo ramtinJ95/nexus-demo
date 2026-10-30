@@ -64,7 +64,7 @@ A new feature adds its own `data-testid` handles, adds a row here, and adds a fe
 
 ## Evidence
 
-`capture` and `run` write one folder per run, `.verify/runs/<journey>-seed<seed>/` by default (`--name` overrides it):
+`capture` and `run` write one folder per run, `.verify/runs/<journey>-seed<seed>/` by default. `--name` replaces the folder name and accepts letters, digits, `.`, `_`, and `-`, with no `..`.
 
 - `NN-*.png` screenshots, which the journey names;
 - `<journey>.gif`, cut from the `clip` window, at most 8 seconds and 5 MB (the harness lowers frame rate and width until it fits);
