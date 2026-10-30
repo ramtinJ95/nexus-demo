@@ -37,7 +37,7 @@ export const palettes: Record<PaletteName, Palette> = {
     bulletGlow: "#F0E442",
     muzzle: "#fffbe0",
     health: { ok: "#0072B2", warn: "#F0E442", low: "#D55E00" },
-    enemies: { crawler: "#E69F00", dasher: "#D55E00", splitter: "#009E73", splitling: "#7fd6be", shielded: "#c8c8c8" },
+    enemies: { crawler: "#E69F00", dasher: "#D55E00", splitter: "#009E73", splitling: "#7fd6be", shielded: "#c8c8c8", boss: "#0072B2" },
   },
 };
 

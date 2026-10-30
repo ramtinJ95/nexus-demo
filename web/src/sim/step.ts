@@ -1,7 +1,7 @@
-import { debutKind, enemyKinds, enemyTypes, type EnemyType } from "./enemies";
+import { bossPhase, debutKind, enemyKinds, enemyTypes, type BossBehavior, type BossPhase, type DashBehavior, type EnemyType } from "./enemies";
 import { nextRandom } from "./rng";
 import type { Settings } from "./settings";
-import type { Bug, EnemyKind, GameEvent, GameState, InputFrame, Vec } from "./types";
+import type { Bug, Dash, EnemyKind, GameEvent, GameState, InputFrame, Vec } from "./types";
 
 export function createGame(seed: number, settings: Settings): GameState {
   const { width, height } = settings.arena;
@@ -60,7 +60,13 @@ export function step(state: GameState, input: InputFrame, settings: Settings): G
   }
 
   const wave = state.wave;
-  if (wave.phase === "spawning" && wave.remaining === 0 && state.bugs.length === 0) {
+  if (wave.phase === "resting" || state.bugs.length > 0 || (wave.phase === "spawning" && wave.remaining > 0)) return events;
+  if (wave.phase === "spawning" && wave.number % settings.waves.bossEvery === 0) {
+    const pos = edgePoint(state, settings);
+    state.bugs.push(newBug(state, "boss", pos, unit(pylonCenter(settings), pos), enemyTypes.boss.boss!.phases[1].charge.stalkSeconds));
+    state.wave = { phase: "boss", number: wave.number };
+    events.push({ type: "bossSpawned", wave: wave.number, pos: { ...pos } });
+  } else {
     state.wavesSurvived++;
     events.push({ type: "waveCleared", wave: wave.number });
     state.wave = { phase: "resting", number: wave.number + 1, nextWaveIn: settings.waves.restSeconds };
@@ -108,6 +114,7 @@ function advanceWave(state: GameState, settings: Settings, dt: number, events: G
     events.push({ type: "waveStarted", wave: wave.number });
     return;
   }
+  if (wave.phase === "boss") return;
   wave.nextSpawnIn -= dt;
   while (wave.remaining > 0 && wave.nextSpawnIn <= 0) {
     const first = wave.remaining === bugsInWave(wave.number, settings);
@@ -119,18 +126,22 @@ function advanceWave(state: GameState, settings: Settings, dt: number, events: G
 }
 
 function spawnBug(state: GameState, wave: number, first: boolean, settings: Settings): Bug {
-  const { width, height } = settings.arena;
   const roll = nextRandom(state);
   const kind = (first && debutKind(wave)) || pickKind(roll, wave);
-  let t = nextRandom(state) * 2 * (width + height);
-  let pos: Vec;
-  if (t < width) pos = { x: t, y: 0 };
-  else if ((t -= width) < height) pos = { x: width, y: t };
-  else if ((t -= height) < width) pos = { x: width - t, y: height };
-  else pos = { x: 0, y: height - (t - width) };
+  const pos = edgePoint(state, settings);
   const facing = unit(pylonCenter(settings), pos);
   const dash = enemyTypes[kind].dash;
   return newBug(state, kind, pos, facing, dash ? dash.stalkSeconds * (0.5 + nextRandom(state)) : 0);
+}
+
+/** A seeded point on the arena's border. */
+function edgePoint(state: GameState, settings: Settings): Vec {
+  const { width, height } = settings.arena;
+  let t = nextRandom(state) * 2 * (width + height);
+  if (t < width) return { x: t, y: 0 };
+  if ((t -= width) < height) return { x: width, y: t };
+  if ((t -= height) < width) return { x: width - t, y: height };
+  return { x: 0, y: height - (t - width) };
 }
 
 /** A wave's size counts every body a spawn will become, so splitters don't swell a wave past the next one. */
@@ -157,17 +168,48 @@ function pickKind(roll: number, wave: number): EnemyKind {
 function newBug(state: GameState, kind: EnemyKind, pos: Vec, facing: Vec, stalkLeft: number): Bug {
   const body = { id: state.nextId++, pos, hp: enemyTypes[kind].hp, latched: false, facing };
   if (kind === "dasher") return { ...body, kind, dash: { phase: "stalk", left: stalkLeft } };
+  if (kind === "boss") return { ...body, kind, dash: { phase: "stalk", left: stalkLeft }, broodIn: 0 };
   return { ...body, kind };
 }
 
 function moveBugs(state: GameState, settings: Settings, dt: number, events: GameEvent[]): void {
   const speedScale = 1 + (state.wave.number - 1) * settings.waves.speedGrowthPerWave;
+  const brood: Bug[] = [];
   for (const bug of state.bugs) {
-    if (bug.latched) continue;
     const type: EnemyType = enemyTypes[bug.kind];
-    if (bug.kind === "dasher" && type.dash) moveDasher(state, bug, type, type.dash, speedScale, settings, dt, events);
+    const phase = bug.kind === "boss" ? type.boss?.phases[bossPhase(bug)] : undefined;
+    if (bug.kind === "boss" && phase?.brood) brood.push(...hatch(state, bug, phase.brood, settings, dt));
+    if (bug.latched) continue;
+    const charge = phase?.charge ?? type.dash;
+    if ("dash" in bug && charge) moveDasher(state, bug, type, charge, speedScale, settings, dt, events);
     else crawl(state, bug, type, speedScale, settings, dt, events);
   }
+  state.bugs.push(...brood);
+}
+
+/** The brood bursts out in a ring around the boss, kept inside the arena so every bug can be shot. */
+function hatch(
+  state: GameState,
+  boss: Extract<Bug, { kind: "boss" }>,
+  brood: NonNullable<BossBehavior["phases"][BossPhase]["brood"]>,
+  settings: Settings,
+  dt: number,
+): Bug[] {
+  boss.broodIn -= dt;
+  if (boss.broodIn > 0) return [];
+  boss.broodIn = brood.everySeconds;
+  const child = enemyTypes[brood.kind];
+  const ring = enemyTypes.boss.radius + child.radius + 2;
+  const start = Math.atan2(boss.facing.y, boss.facing.x);
+  const center = pylonCenter(settings);
+  return Array.from({ length: brood.count }, (_, i) => {
+    const angle = start + (2 * Math.PI * i) / brood.count;
+    const pos = {
+      x: clamp(boss.pos.x + Math.cos(angle) * ring, child.radius, settings.arena.width - child.radius),
+      y: clamp(boss.pos.y + Math.sin(angle) * ring, child.radius, settings.arena.height - child.radius),
+    };
+    return newBug(state, brood.kind, pos, unit(center, pos), child.dash?.stalkSeconds ?? 0);
+  });
 }
 
 function crawl(state: GameState, bug: Bug, type: EnemyType, speedScale: number, settings: Settings, dt: number, events: GameEvent[]): void {
@@ -196,9 +238,9 @@ function latch(state: GameState, bug: Bug, reach: number, settings: Settings, ev
 
 function moveDasher(
   state: GameState,
-  bug: Extract<Bug, { kind: "dasher" }>,
+  bug: Extract<Bug, { dash: Dash }>,
   type: EnemyType,
-  dash: NonNullable<EnemyType["dash"]>,
+  dash: DashBehavior,
   speedScale: number,
   settings: Settings,
   dt: number,
@@ -218,7 +260,7 @@ function moveDasher(
     return;
   }
   if (d.phase === "windup") {
-    bug.facing = unit(drone.pos, bug.pos);
+    if (!dash.locksAim) bug.facing = unit(drone.pos, bug.pos);
     d.left -= dt;
     if (d.left <= 0) bug.dash = { phase: "lunge", left: dash.lungeSeconds, dir: { ...bug.facing } };
     return;
@@ -270,8 +312,10 @@ function moveBullets(state: GameState, settings: Settings, dt: number, events: G
       events.push({ type: "shieldBlocked", pos: { ...bullet.pos } });
       continue;
     }
+    const calm = target.kind === "boss" && bossPhase(target) === 1;
     target.hp -= settings.bullet.damage;
     events.push({ type: "bugHit", id: target.id, kind: target.kind, pos: { ...bullet.pos } });
+    if (calm && target.kind === "boss" && bossPhase(target) === 2) events.push({ type: "bossEnraged", pos: { ...target.pos } });
     if (target.hp <= 0) {
       state.kills++;
       events.push({ type: "bugKilled", kind: target.kind, pos: { ...target.pos } });
