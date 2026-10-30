@@ -1,5 +1,5 @@
-import { describe, expect, test } from "vitest";
-import { boardRows, newRunId, panelAfter, submitScore, type ScoreRow } from "./leaderboard";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { boardRows, newRunId, panelAfter, submitScore, TIMEOUT_MS, type ScoreRow } from "./leaderboard";
 
 const row = (id: number, score: number): ScoreRow => ({ id, name: `p${id}`, score, wave: 1 });
 const json = (status: number, body: unknown) =>
@@ -66,6 +66,59 @@ describe("submitScore", () => {
   test("a 400 carries the API's message", async () => {
     const { fetch } = fakeFetch(json(400, { error: "name must not contain control characters" }));
     expect(await submitScore(fetch, "Ada", run)).toEqual({ kind: "rejected", error: "name must not contain control characters" });
+  });
+});
+
+describe("submitScore against a hanging API", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const aborted = (signal: AbortSignal | null | undefined) =>
+    new Promise<never>((_, reject) => signal?.addEventListener("abort", () => reject(signal.reason)));
+
+  async function settleAt(pending: Promise<unknown>, ms: number) {
+    let settled = false;
+    void pending.then(() => (settled = true));
+    await vi.advanceTimersByTimeAsync(ms);
+    return settled;
+  }
+
+  test("a request with no answer is offline at the deadline, and the run can still be retried", async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    const hanging = async (_path: string, init?: RequestInit) => {
+      signals.push(init!.signal!);
+      return aborted(init?.signal);
+    };
+    const pending = submitScore(hanging, "Ada", run);
+    expect(await settleAt(pending, TIMEOUT_MS - 1)).toBe(false);
+    expect(signals[0]!.aborted).toBe(false);
+    expect(await settleAt(pending, 1)).toBe(true);
+    expect(signals[0]!.aborted).toBe(true);
+    const result = await pending;
+    expect(result).toEqual({ kind: "offline" });
+    expect(panelAfter(run, result)).toEqual({ kind: "offline", run });
+
+    const mine = row(7, 21);
+    const { fetch } = fakeFetch(json(200, { score: mine, rank: 1, top: [mine] }));
+    expect(await submitScore(fetch, "Ada", run)).toMatchObject({ kind: "saved", rank: 1 });
+  });
+
+  test("headers that arrive with a body that stalls are offline at the deadline", async () => {
+    vi.useFakeTimers();
+    const stalled = async (_path: string, init?: RequestInit) => {
+      const body = new ReadableStream({
+        start(controller) {
+          init?.signal?.addEventListener("abort", () => controller.error(init.signal!.reason));
+        },
+      });
+      return new Response(body, { status: 201, headers: { "content-type": "application/json" } });
+    };
+    const pending = submitScore(stalled, "Ada", run);
+    expect(await settleAt(pending, TIMEOUT_MS - 1)).toBe(false);
+    expect(await settleAt(pending, 1)).toBe(true);
+    expect(await pending).toEqual({ kind: "offline" });
   });
 });
 

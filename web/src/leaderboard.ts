@@ -45,24 +45,30 @@ export function panelAfter(run: Run, result: SubmitResult): Panel {
 
 type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 
-const TIMEOUT_MS = 4000;
+export const TIMEOUT_MS = 4000;
 
-/** A network failure or a 5xx is `offline`, and a retry with the same run is safe. A 4xx carries the API's message. */
+/**
+ * A network failure, a 5xx, or no full reply within `TIMEOUT_MS` is `offline`, and a retry with the same run is safe.
+ * A 4xx carries the API's message.
+ */
 export async function submitScore(fetch: Fetch, name: string, run: Run): Promise<SubmitResult> {
-  let posted: Response;
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), TIMEOUT_MS);
   try {
-    posted = await fetch("/api/scores", {
+    const posted = await fetch("/api/scores", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name, score: run.score, wave: run.wave, runId: run.id }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: deadline.signal,
     });
+    if (posted.status >= 500) return { kind: "offline" };
+    const reply = await posted.json().catch(() => null);
+    if (!posted.ok) return { kind: "rejected", error: typeof reply?.error === "string" ? reply.error : `the API answered ${posted.status}` };
+    if (typeof reply?.rank !== "number" || typeof reply.score?.id !== "number" || !Array.isArray(reply.top)) return { kind: "offline" };
+    return { kind: "saved", mine: reply.score, rank: reply.rank, top: reply.top };
   } catch {
     return { kind: "offline" };
+  } finally {
+    clearTimeout(timer);
   }
-  if (posted.status >= 500) return { kind: "offline" };
-  const reply = await posted.json().catch(() => null);
-  if (!posted.ok) return { kind: "rejected", error: typeof reply?.error === "string" ? reply.error : `the API answered ${posted.status}` };
-  if (typeof reply?.rank !== "number" || typeof reply.score?.id !== "number" || !Array.isArray(reply.top)) return { kind: "offline" };
-  return { kind: "saved", mine: reply.score, rank: reply.rank, top: reply.top };
 }
