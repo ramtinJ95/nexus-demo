@@ -2,7 +2,7 @@
   "journey": "title-settings",
   "feature": "title-settings.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:46437/?seed=1337",
+  "url": "http://127.0.0.1:32771/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -83,7 +83,7 @@
       "ok": true
     },
     {
-      "claim": "Escape pauses the run and shows the pause overlay",
+      "claim": "holding Escape through key repeats pauses the run once and shows the pause overlay",
       "ok": true
     },
     {
@@ -110,5 +110,5 @@
     "title-settings.mp4",
     "title-settings.webm"
   ],
-  "capturedAt": "2026-10-30T12:48:17.002Z"
+  "capturedAt": "2026-10-30T12:58:53.155Z"
 }
