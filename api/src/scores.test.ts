@@ -16,15 +16,15 @@ describe("file-backed store", () => {
   test("a reopened store finds the earlier row", () => {
     const path = join(dir, "scores.db");
     const first = openScoreStore(path);
-    const stored = first.submit({ name: "kept", score: 7, wave: 2 }, null, 10).score;
+    const stored = first.submit({ name: "kept", score: 7, wave: 2, day: null }, null, 10).score;
     first.close();
 
     const second = openScoreStore(path);
-    assert.deepEqual(second.top(10), [stored]);
+    assert.deepEqual(second.top(10, null), [stored]);
     second.close();
   });
 
-  test("a database from before run ids keeps its rows and dedupes new runs", () => {
+  test("a database from before run ids and days keeps its rows on the classic board and dedupes new runs", () => {
     const path = join(dir, "old.db");
     const old = new DatabaseSync(path);
     old.exec("CREATE TABLE scores (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, score INTEGER NOT NULL, wave INTEGER NOT NULL, created_at TEXT NOT NULL)");
@@ -32,10 +32,14 @@ describe("file-backed store", () => {
     old.close();
 
     const store = openScoreStore(path);
-    const entry = { name: "new", score: 9, wave: 2 };
+    const entry = { name: "new", score: 9, wave: 2, day: null };
     assert.equal(store.submit(entry, "run-00000001", 10).created, true);
     assert.equal(store.submit(entry, "run-00000001", 10).created, false);
-    assert.deepEqual(store.top(10).map((s) => s.name), ["new", "old"]);
+    assert.deepEqual(store.top(10, null).map((s) => s.name), ["new", "old"]);
+    assert.equal(store.top(10, null)[1]?.day, null);
+    store.submit({ name: "daily", score: 99, wave: 3, day: "2026-10-30" }, null, 10);
+    assert.deepEqual(store.top(10, "2026-10-30").map((s) => s.name), ["daily"]);
+    assert.deepEqual(store.top(10, null).map((s) => s.name), ["new", "old"]);
     store.close();
   });
 });
