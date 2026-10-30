@@ -1,0 +1,45 @@
+{
+  "journey": "game-feel",
+  "feature": "game-feel.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:45023/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "full motion is on when the player has no reduced-motion preference",
+      "ok": true
+    },
+    {
+      "claim": "bullets hit and kill bugs during the firefight",
+      "ok": true
+    },
+    {
+      "claim": "a latched bug damages the pylon",
+      "ok": true
+    },
+    {
+      "claim": "pylon damage shakes the screen",
+      "ok": true
+    },
+    {
+      "claim": "the OS reduced-motion preference turns reduced motion on",
+      "ok": true
+    },
+    {
+      "claim": "with reduced motion, pylon damage does not shake the screen",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-firefight-particles-flashes.png",
+    "02-pylon-hit-shake-pulse.png",
+    "03-reduced-motion-firefight.png",
+    "04-reduced-motion-pylon-hit.png",
+    "game-feel.gif",
+    "game-feel.mp4",
+    "game-feel.webm"
+  ],
+  "capturedAt": "2026-10-30T10:31:15.712Z"
+}
