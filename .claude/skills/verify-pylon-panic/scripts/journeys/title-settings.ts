@@ -5,7 +5,7 @@ const number = (text: string | null) => Number(/-?\d+/.exec(text ?? "")?.[0] ?? 
 
 export const titleSettings: Journey = {
   feature: "title-settings.md",
-  description: "Open on the title screen, change volume, colorblind colors and reduced motion, reload to see them kept, then play, pause with Escape and resume.",
+  description: "Open on the title screen, change the effects volume, colorblind colors and reduced motion, reload to see them kept, then play, pause with Escape and resume.",
   async run({ page, open, shot, check, clip }) {
     const root = page.getByTestId("game");
     const attr = (name: string) => root.getAttribute(name);
@@ -32,22 +32,24 @@ export const titleSettings: Journey = {
     await page.getByTestId("title-settings").click();
     check(await page.getByTestId("settings").isVisible(), "the settings button opens the settings panel");
     check((await attr("data-screen")) === "title" && (await attr("data-settings")) === "true", "settings open over the title screen");
-    check((await attr("data-volume")) === "60" && (await page.getByTestId("setting-volume-value").textContent()) === "60%", "volume starts at 60%");
+    check((await attr("data-music-volume")) === "50" && (await page.getByTestId("setting-music-volume-value").textContent()) === "50%", "music volume starts at 50%");
+    check((await attr("data-sfx-volume")) === "60" && (await page.getByTestId("setting-sfx-volume-value").textContent()) === "60%", "effects volume starts at 60%");
     check((await attr("data-palette")) === "neon" && (await attr("data-reduced-motion")) === "false", "the neon palette and full motion are the defaults");
     await shot("02-settings");
 
-    const volume = page.getByTestId("setting-volume");
-    await volume.press("ArrowLeft");
-    await volume.press("ArrowLeft");
+    const sfxVolume = page.getByTestId("setting-sfx-volume");
+    await sfxVolume.press("ArrowLeft");
+    await sfxVolume.press("ArrowLeft");
     await page.getByTestId("setting-colorblind").click();
     await page.getByTestId("setting-reduced-motion").click();
-    check((await attr("data-volume")) === "50" && (await page.getByTestId("setting-volume-value").textContent()) === "50%", "two ArrowLeft presses lower the volume to 50%");
+    check((await attr("data-sfx-volume")) === "50" && (await page.getByTestId("setting-sfx-volume-value").textContent()) === "50%", "two ArrowLeft presses lower the effects volume to 50%");
+    check((await attr("data-music-volume")) === "50", "the music volume stays at 50% when the effects slider moves");
     check((await attr("data-palette")) === "colorblind", "the colorblind checkbox switches to the colorblind palette");
     check((await attr("data-reduced-motion")) === "true", "the reduced-motion checkbox turns reduced motion on");
 
     await open("/", { title: true });
     await page.getByTestId("title-settings").click();
-    check((await volume.inputValue()) === "50" && (await attr("data-volume")) === "50", "the volume survives a reload");
+    check((await sfxVolume.inputValue()) === "50" && (await attr("data-sfx-volume")) === "50", "the effects volume survives a reload");
     check((await page.getByTestId("setting-colorblind").isChecked()) && (await attr("data-palette")) === "colorblind", "the colorblind palette survives a reload");
     check((await page.getByTestId("setting-reduced-motion").isChecked()) && (await attr("data-reduced-motion")) === "true", "reduced motion survives a reload");
     await shot("03-settings-persisted");

@@ -1,6 +1,6 @@
 import "./style.css";
 import "./touch.css";
-import { createSfx } from "./audio";
+import { createAudio, soundedEvents } from "./audio";
 import { dailySeed, dayOf, type Day, type Mode } from "./daily";
 import { startGame } from "./game";
 import { createEffects, frameEffects } from "./fx/effects";
@@ -43,7 +43,7 @@ const motionForced = urlForcesReducedMotion();
 const osReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 /** Reading the `localStorage` global itself throws in some sandboxes, so it is touched only inside calls that prefs guards. */
 const storage = { getItem: (key: string) => localStorage.getItem(key), setItem: (key: string, value: string) => localStorage.setItem(key, value) };
-let prefs = loadPrefs(storage, { volume: 0.6, reducedMotion: osReducedMotion, palette: "neon" });
+let prefs = loadPrefs(storage, { musicVolume: 0.5, sfxVolume: 0.6, reducedMotion: osReducedMotion, palette: "neon" });
 let screen: Screen = initialScreen;
 let mode: Mode = { kind: "classic" };
 const settings = { ...defaultSettings, fx: { ...defaultSettings.fx } };
@@ -56,7 +56,7 @@ let fxEvents: GameEvent[] = [];
 let lastFrame: number | undefined;
 root.dataset.shake = "false";
 const logo = root.querySelector<HTMLCanvasElement>('[data-testid="title-logo"]')!;
-const sfx = createSfx();
+const audio = createAudio();
 
 const game = startGame({
   seed,
@@ -73,13 +73,17 @@ const game = startGame({
     hud.update(state, palette);
     const shaking = String(fx.trauma > 0);
     if (root.dataset.shake !== shaking) root.dataset.shake = shaking;
+    audio.setMusic(screen.kind === "playing" && state.phase === "playing" ? state.wave.number : null);
+    const music = String(audio.level ?? "off");
+    if (root.dataset.music !== music) root.dataset.music = music;
+    if (root.dataset.audio !== audio.state) root.dataset.audio = audio.state;
   },
 });
 
 for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit", "shieldBlocked"] as const) {
   game.on(type, (event) => fxEvents.push(event));
 }
-for (const type of ["shotFired", "bugKilled", "pylonHit", "gameOver"] as const) game.on(type, sfx.play);
+for (const type of soundedEvents) game.on(type, audio.play);
 
 const menus = createMenus(root, {
   act,
@@ -119,7 +123,7 @@ function showMode(): void {
 function applyPrefs(next: Prefs): void {
   prefs = next;
   settings.fx.reducedMotion = motionForced || prefs.reducedMotion;
-  sfx.setVolume(prefs.volume);
+  audio.setVolumes({ music: prefs.musicVolume, sfx: prefs.sfxVolume });
   menus.showPrefs(prefs, motionForced);
   redrawLogo();
 }
@@ -149,14 +153,14 @@ function restart(nextSeed = game.state.seed): void {
 
 root.querySelector('[data-testid="restart"]')!.addEventListener("click", () => restart());
 window.addEventListener("keydown", (e) => {
-  sfx.resume();
+  audio.unlock();
   if (e.code === "KeyR" && !e.repeat && screen.kind === "playing" && !(e.target instanceof HTMLInputElement)) restart();
   if (e.code === "Escape" && !e.repeat) act("escape");
   const onTitle = screen.kind === "menu" && screen.menu === "title" && !screen.settings;
   // A focused button already acts on Enter; starting here too would swallow its click.
   if ((e.code === "Enter" || e.code === "NumpadEnter") && onTitle && !(e.target instanceof HTMLButtonElement)) act("start");
 });
-window.addEventListener("pointerdown", () => sfx.resume());
+window.addEventListener("pointerdown", () => audio.unlock());
 window.addEventListener("resize", redrawLogo);
 applyPrefs(prefs);
 showMode();
