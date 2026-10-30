@@ -2,7 +2,7 @@
   "journey": "enemy-splitter",
   "feature": "enemy-variety.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:39505/?seed=1337",
+  "url": "http://127.0.0.1:43207/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -40,5 +40,5 @@
     "enemy-splitter.mp4",
     "enemy-splitter.webm"
   ],
-  "capturedAt": "2026-10-30T12:02:13.253Z"
+  "capturedAt": "2026-10-30T12:26:48.413Z"
 }

@@ -2,7 +2,7 @@
   "journey": "enemy-shielded",
   "feature": "enemy-variety.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:34223/?seed=1337",
+  "url": "http://127.0.0.1:36127/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -41,5 +41,5 @@
     "enemy-shielded.mp4",
     "enemy-shielded.webm"
   ],
-  "capturedAt": "2026-10-30T12:03:50.383Z"
+  "capturedAt": "2026-10-30T12:28:52.361Z"
 }

@@ -2,7 +2,7 @@
   "journey": "enemy-dasher",
   "feature": "enemy-variety.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:32787/?seed=1337",
+  "url": "http://127.0.0.1:44285/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -36,5 +36,5 @@
     "enemy-dasher.mp4",
     "enemy-dasher.webm"
   ],
-  "capturedAt": "2026-10-30T12:01:04.165Z"
+  "capturedAt": "2026-10-30T12:25:30.516Z"
 }
