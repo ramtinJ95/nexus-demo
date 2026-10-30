@@ -2,7 +2,7 @@
   "journey": "daily",
   "feature": "daily.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:46387/?seed=1337",
+  "url": "http://127.0.0.1:35761/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -40,6 +40,18 @@
     },
     {
       "claim": "a player on 2026-10-31 gets a different seed 4291980170",
+      "ok": true
+    },
+    {
+      "claim": "a title loaded at 23:59:59Z offers 2026-10-30",
+      "ok": true
+    },
+    {
+      "claim": "after midnight UTC the open title relabels the button to 2026-10-31",
+      "ok": true
+    },
+    {
+      "claim": "clicking the relabeled button starts the 2026-10-31 seed 4291980170",
       "ok": true
     },
     {
@@ -88,5 +100,5 @@
     "daily.mp4",
     "daily.webm"
   ],
-  "capturedAt": "2026-10-30T13:31:56.034Z"
+  "capturedAt": "2026-10-30T13:37:14.342Z"
 }
