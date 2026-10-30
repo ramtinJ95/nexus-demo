@@ -61,6 +61,8 @@ Read the game through these stable handles:
 | `[data-testid="restart"]` | restart button. `R` also restarts |
 | `[data-testid="game"]` with `data-reduced-motion` | `true` when reduced motion is on |
 | `[data-testid="game"]` with `data-shake` | `true` while the screen shakes |
+| `[data-testid="game"]` with `data-enemy-kinds` | the enemy kinds on the field now, sorted and space-separated |
+| `[data-testid="hud-new-enemy"]` with `data-kind` | the banner for a kind that debuts this wave |
 
 A new feature adds its own `data-testid` handles, adds a row here, and adds a feature file under `features/`.
 

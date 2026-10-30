@@ -32,5 +32,6 @@ Each feature file starts with an H1 title and one paragraph on what the player s
 | Feature | Journey | Covers |
 | --- | --- | --- |
 | [Core loop](./core-loop.md) | `core-loop` | moving, aiming, shooting, waves, HUD, pylon drain, game over, restart |
+| [Enemy variety](./enemy-variety.md) | `enemy-dasher`, `enemy-splitter`, `enemy-shielded` | wave debuts, dasher lunge, splitter split, shielded bug hit from behind, mixed waves |
 | [Game feel](./game-feel.md) | `game-feel` | hit sparks, death bursts, hit flash, muzzle flash, screen shake and pylon glow pulse on damage, reduced motion |
 | [Leaderboard API](./leaderboard-api.md) | `leaderboard-api` | health, listing, submitting, and validating scores |

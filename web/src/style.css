@@ -89,6 +89,34 @@ body {
   box-shadow: 0 0 10px var(--danger);
 }
 
+.new-enemy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: center;
+  margin: 0 auto;
+  padding: 6px 14px;
+  border: 1px solid var(--enemy-color, var(--magenta));
+  box-shadow: 0 0 12px var(--enemy-color, var(--magenta));
+  text-align: center;
+}
+
+.new-enemy[hidden] {
+  display: none;
+}
+
+.new-enemy-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--enemy-color, #fff);
+  text-shadow: 0 0 10px var(--enemy-color, var(--magenta));
+}
+
+.new-enemy-hint {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
 .seed {
   margin-left: auto;
   text-align: right;

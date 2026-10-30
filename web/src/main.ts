@@ -56,7 +56,7 @@ const game = startGame({
   },
 });
 
-for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit"] as const) {
+for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit", "shieldBlocked"] as const) {
   game.on(type, (event) => fxEvents.push(event));
 }
 
