@@ -1,0 +1,101 @@
+{
+  "journey": "music-audio",
+  "feature": "music-audio.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:43211/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "before any input the audio is locked",
+      "ok": true
+    },
+    {
+      "claim": "the title screen plays no music",
+      "ok": true
+    },
+    {
+      "claim": "the settings panel shows the Music slider",
+      "ok": true
+    },
+    {
+      "claim": "the settings panel shows the Effects slider",
+      "ok": true
+    },
+    {
+      "claim": "music volume starts at 50%",
+      "ok": true
+    },
+    {
+      "claim": "effects volume starts at 60%",
+      "ok": true
+    },
+    {
+      "claim": "two ArrowRight presses raise the music to 60%",
+      "ok": true
+    },
+    {
+      "claim": "four ArrowLeft presses lower the effects to 40%",
+      "ok": true
+    },
+    {
+      "claim": "a reloaded page is locked again until input",
+      "ok": true
+    },
+    {
+      "claim": "the music volume survives a reload",
+      "ok": true
+    },
+    {
+      "claim": "the effects volume survives a reload",
+      "ok": true
+    },
+    {
+      "claim": "after a click the audio runs (data-audio=\"running\")",
+      "ok": true
+    },
+    {
+      "claim": "settings over the title screen play no music",
+      "ok": true
+    },
+    {
+      "claim": "wave 1 plays music level 1",
+      "ok": true
+    },
+    {
+      "claim": "clearing wave 1 raises the music to level 2 for wave 2",
+      "ok": true
+    },
+    {
+      "claim": "Escape pauses the run",
+      "ok": true
+    },
+    {
+      "claim": "the pause overlay silences the music",
+      "ok": true
+    },
+    {
+      "claim": "resuming brings the wave 2 music back",
+      "ok": true
+    },
+    {
+      "claim": "the music reaches level 2 within 60 seconds of fighting",
+      "ok": true
+    },
+    {
+      "claim": "wave 1 plays only music level 1 (saw 1)",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-settings-music-effects.png",
+    "02-settings-persisted.png",
+    "03-wave-2-music-level-2.png",
+    "04-paused-music-off.png",
+    "music-audio.gif",
+    "music-audio.mp4",
+    "music-audio.webm"
+  ],
+  "capturedAt": "2026-10-30T13:44:35.429Z"
+}
