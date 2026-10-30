@@ -2,6 +2,7 @@ import type { Journey } from "../journey.ts";
 import { coreLoop } from "./core-loop.ts";
 import { enemyDasher, enemyShielded, enemySplitter } from "./enemy-variety.ts";
 import { gameFeel } from "./game-feel.ts";
+import { leaderboard } from "./leaderboard.ts";
 import { leaderboardApi } from "./leaderboard-api.ts";
 
 export const journeys: Record<string, Journey> = {
@@ -10,5 +11,6 @@ export const journeys: Record<string, Journey> = {
   "enemy-splitter": enemySplitter,
   "enemy-shielded": enemyShielded,
   "game-feel": gameFeel,
+  leaderboard,
   "leaderboard-api": leaderboardApi,
 };

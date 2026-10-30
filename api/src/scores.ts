@@ -12,11 +12,20 @@ export type StoredScore = ScoreEntry & {
 };
 
 export type ParseResult =
-  | { readonly ok: true; readonly entry: ScoreEntry }
+  | { readonly ok: true; readonly entry: ScoreEntry; readonly runId: string | null }
   | { readonly ok: false; readonly error: string };
 
+/** `rank` is 1-based in the `top` order, and `rank` and `top` come from the same read. */
+export type Submitted = {
+  readonly score: StoredScore;
+  readonly created: boolean;
+  readonly rank: number;
+  readonly top: StoredScore[];
+};
+
 export type ScoreStore = {
-  insert(entry: ScoreEntry): StoredScore;
+  /** Stores the entry, or finds the row an earlier submit with the same `runId` stored. */
+  submit(entry: ScoreEntry, runId: string | null, limit: number): Submitted;
   top(limit: number): StoredScore[];
   ping(): void;
   close(): void;
@@ -25,6 +34,7 @@ export type ScoreStore = {
 export const NAME_MAX = 16;
 export const SCORE_MAX = 1_000_000;
 export const WAVE_MAX = 10_000;
+const RUN_ID = /^[A-Za-z0-9_-]{8,64}$/;
 
 const CONTROL_CHARS = /\p{Cc}/u;
 
@@ -52,7 +62,11 @@ export function parseScoreEntry(input: unknown): ParseResult {
   if (!intInRange(wave, 1, WAVE_MAX)) {
     return { ok: false, error: `wave must be an integer from 1 to ${WAVE_MAX}` };
   }
-  return { ok: true, entry: { name: trimmed, score, wave } };
+  const { runId = null } = input as Record<string, unknown>;
+  if (runId !== null && (typeof runId !== "string" || !RUN_ID.test(runId))) {
+    return { ok: false, error: "runId must be 8 to 64 letters, digits, '_' or '-'" };
+  }
+  return { ok: true, entry: { name: trimmed, score, wave }, runId };
 }
 
 type Row = { id: number; name: string; score: number; wave: number; created_at: string };
@@ -73,19 +87,42 @@ export function openScoreStore(path: string): ScoreStore {
     );
     CREATE INDEX IF NOT EXISTS scores_rank ON scores (score DESC, wave DESC, id ASC);
   `);
+  const columns = db.prepare("SELECT name FROM pragma_table_info('scores')").all() as { name: string }[];
+  if (!columns.some((c) => c.name === "run_id")) db.exec("ALTER TABLE scores ADD COLUMN run_id TEXT");
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS scores_run_id ON scores (run_id)");
+
   const insertStmt = db.prepare(
-    "INSERT INTO scores (name, score, wave, created_at) VALUES (?, ?, ?, ?) RETURNING *",
+    "INSERT INTO scores (name, score, wave, created_at, run_id) VALUES (?, ?, ?, ?, ?) ON CONFLICT (run_id) DO NOTHING RETURNING *",
   );
+  const byRunStmt = db.prepare("SELECT * FROM scores WHERE run_id = ?");
   // id breaks ties inside one millisecond, where created_at alone cannot say which came first.
   const topStmt = db.prepare(
     "SELECT * FROM scores ORDER BY score DESC, wave DESC, created_at ASC, id ASC LIMIT ?",
   );
+  const rankStmt = db.prepare(`
+    SELECT COUNT(*) + 1 AS rank FROM scores
+    WHERE score > :score
+      OR (score = :score AND wave > :wave)
+      OR (score = :score AND wave = :wave AND created_at < :createdAt)
+      OR (score = :score AND wave = :wave AND created_at = :createdAt AND id < :id)
+  `);
   const pingStmt = db.prepare("SELECT 1");
 
   return {
-    insert(entry) {
-      const row = insertStmt.get(entry.name, entry.score, entry.wave, new Date().toISOString());
-      return toStored(row as Row);
+    submit(entry, runId, limit) {
+      db.exec("BEGIN IMMEDIATE");
+      try {
+        const inserted = insertStmt.get(entry.name, entry.score, entry.wave, new Date().toISOString(), runId) as Row | undefined;
+        const score = toStored(inserted ?? (byRunStmt.get(runId) as Row));
+        const { id, wave, createdAt } = score;
+        const { rank } = rankStmt.get({ id, score: score.score, wave, createdAt }) as { rank: number };
+        const top = (topStmt.all(limit) as Row[]).map(toStored);
+        db.exec("COMMIT");
+        return { score, created: inserted !== undefined, rank, top };
+      } catch (error) {
+        db.exec("ROLLBACK");
+        throw error;
+      }
     },
     top(limit) {
       return (topStmt.all(limit) as Row[]).map(toStored);

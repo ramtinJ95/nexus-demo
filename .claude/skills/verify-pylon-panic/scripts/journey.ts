@@ -12,6 +12,8 @@ export type JourneyContext = {
   save(name: string, data: unknown): void;
   /** Records a named assertion in the manifest and throws when it fails. */
   check(ok: boolean, claim: string): void;
+  /** From now on, a console error matching `pattern` does not fail the run. Call it only after the journey causes that error on purpose. */
+  allowConsoleError(pattern: RegExp): void;
   /** Marks the stretch of the recording that becomes the GIF. Keep it under 8 seconds. */
   clip: { start(): void; stop(): void };
 };
