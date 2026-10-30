@@ -1,0 +1,122 @@
+{
+  "journey": "title-settings",
+  "feature": "title-settings.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:36743/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "a fresh page opens on the title screen",
+      "ok": true
+    },
+    {
+      "claim": "the game root reports the title screen",
+      "ok": true
+    },
+    {
+      "claim": "the title screen shows how to play",
+      "ok": true
+    },
+    {
+      "claim": "the logo canvas is drawn (48.6% of its pixels lit)",
+      "ok": true
+    },
+    {
+      "claim": "the run does not advance behind the title screen",
+      "ok": true
+    },
+    {
+      "claim": "behind the title the score is 0 and the pylon is untouched",
+      "ok": true
+    },
+    {
+      "claim": "the settings button opens the settings panel",
+      "ok": true
+    },
+    {
+      "claim": "settings open over the title screen",
+      "ok": true
+    },
+    {
+      "claim": "music volume starts at 50%",
+      "ok": true
+    },
+    {
+      "claim": "effects volume starts at 60%",
+      "ok": true
+    },
+    {
+      "claim": "the neon palette and full motion are the defaults",
+      "ok": true
+    },
+    {
+      "claim": "two ArrowLeft presses lower the effects volume to 50%",
+      "ok": true
+    },
+    {
+      "claim": "the music volume stays at 50% when the effects slider moves",
+      "ok": true
+    },
+    {
+      "claim": "the colorblind checkbox switches to the colorblind palette",
+      "ok": true
+    },
+    {
+      "claim": "the reduced-motion checkbox turns reduced motion on",
+      "ok": true
+    },
+    {
+      "claim": "the effects volume survives a reload",
+      "ok": true
+    },
+    {
+      "claim": "the colorblind palette survives a reload",
+      "ok": true
+    },
+    {
+      "claim": "reduced motion survives a reload",
+      "ok": true
+    },
+    {
+      "claim": "Escape closes settings back to the title screen",
+      "ok": true
+    },
+    {
+      "claim": "Enter on the title screen starts the run",
+      "ok": true
+    },
+    {
+      "claim": "the colorblind run plays and bugs die",
+      "ok": true
+    },
+    {
+      "claim": "holding Escape through key repeats pauses the run once and shows the pause overlay",
+      "ok": true
+    },
+    {
+      "claim": "score, integrity and the wave stay frozen while paused",
+      "ok": true
+    },
+    {
+      "claim": "Escape on the pause overlay resumes the run",
+      "ok": true
+    },
+    {
+      "claim": "the run advances again after resuming",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-title.png",
+    "02-settings.png",
+    "03-settings-persisted.png",
+    "04-colorblind-play.png",
+    "05-paused.png",
+    "title-settings.gif",
+    "title-settings.mp4",
+    "title-settings.webm"
+  ],
+  "capturedAt": "2026-10-30T13:45:20.040Z"
+}
