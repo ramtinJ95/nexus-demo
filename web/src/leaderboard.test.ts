@@ -1,23 +1,28 @@
 import { describe, expect, test } from "vitest";
-import { boardRows, panelAfter, submitScore, type ScoreRow } from "./leaderboard";
+import { boardRows, newRunId, panelAfter, submitScore, type ScoreRow } from "./leaderboard";
 
 const row = (id: number, score: number): ScoreRow => ({ id, name: `p${id}`, score, wave: 1 });
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
-type Reply = Response | Error;
-function fakeFetch(post: Reply, list: Reply) {
-  const calls: { path: string; init: RequestInit | undefined }[] = [];
-  const fetch = async (path: string, init?: RequestInit) => {
-    calls.push({ path, init });
-    const reply = init?.method === "POST" ? post : list;
+function fakeFetch(...replies: (Response | Error)[]) {
+  const bodies: unknown[] = [];
+  const fetch = async (_path: string, init?: RequestInit) => {
+    bodies.push(JSON.parse(String(init?.body)));
+    const reply = replies.shift()!;
     if (reply instanceof Error) throw reply;
     return reply;
   };
-  return { fetch, calls };
+  return { fetch, bodies };
 }
 
-const run = { score: 21, wave: 4 };
+const run = { id: "run-0000000a", score: 21, wave: 4 };
+
+test("run ids are fresh and match the API's runId rule", () => {
+  const ids = new Set(Array.from({ length: 50 }, newRunId));
+  expect(ids.size).toBe(50);
+  for (const id of ids) expect(id).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
+});
 
 describe("boardRows", () => {
   test("ranks the top rows and marks the player's", () => {
@@ -38,35 +43,29 @@ describe("boardRows", () => {
 });
 
 describe("submitScore", () => {
-  test("posts the name and run, then reads the top 10", async () => {
+  test("posts the name, run and run id, and shows the board from the reply", async () => {
     const mine = row(7, 21);
-    const { fetch, calls } = fakeFetch(json(201, { score: mine, rank: 1 }), json(200, { scores: [mine] }));
+    const { fetch, bodies } = fakeFetch(json(201, { score: mine, rank: 1, top: [mine] }));
     expect(await submitScore(fetch, "Ada", run)).toEqual({ kind: "saved", mine, rank: 1, top: [mine] });
-    expect(calls.map((c) => c.path)).toEqual(["/api/scores", "/api/scores?limit=10"]);
-    expect(JSON.parse(String(calls[0]!.init?.body))).toEqual({ name: "Ada", score: 21, wave: 4 });
+    expect(bodies).toEqual([{ name: "Ada", score: 21, wave: 4, runId: "run-0000000a" }]);
   });
 
-  test("a network failure is offline", async () => {
-    const { fetch } = fakeFetch(new TypeError("fetch failed"), json(200, { scores: [] }));
+  test("a retry after a lost reply sends the same run id and takes the stored row", async () => {
+    const mine = row(7, 21);
+    const { fetch, bodies } = fakeFetch(new TypeError("fetch failed"), json(200, { score: mine, rank: 2, top: [row(1, 90), mine] }));
     expect(await submitScore(fetch, "Ada", run)).toEqual({ kind: "offline" });
+    expect(await submitScore(fetch, "Ada", run)).toMatchObject({ kind: "saved", rank: 2 });
+    expect(bodies.map((b) => (b as { runId: string }).runId)).toEqual(["run-0000000a", "run-0000000a"]);
   });
 
   test("a 5xx from the proxy is offline", async () => {
-    const { fetch } = fakeFetch(new Response("", { status: 502 }), json(200, { scores: [] }));
+    const { fetch } = fakeFetch(new Response("", { status: 502 }));
     expect(await submitScore(fetch, "Ada", run)).toEqual({ kind: "offline" });
   });
 
   test("a 400 carries the API's message", async () => {
-    const { fetch } = fakeFetch(json(400, { error: "name must not contain control characters" }), json(200, {}));
+    const { fetch } = fakeFetch(json(400, { error: "name must not contain control characters" }));
     expect(await submitScore(fetch, "Ada", run)).toEqual({ kind: "rejected", error: "name must not contain control characters" });
-  });
-
-  test("a saved score whose board fails to load still reports the rank", async () => {
-    const mine = row(7, 21);
-    const { fetch } = fakeFetch(json(201, { score: mine, rank: 3 }), new TypeError("fetch failed"));
-    const result = await submitScore(fetch, "Ada", run);
-    expect(result).toEqual({ kind: "saved", mine, rank: 3, top: null });
-    expect(panelAfter(run, result)).toMatchObject({ kind: "board", complete: false, rows: [{ id: 7, rank: 3, mine: true }] });
   });
 });
 

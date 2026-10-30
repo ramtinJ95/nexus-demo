@@ -112,6 +112,40 @@ describe("api", () => {
     assert.ok(!(await json(await fetch(`${base}/api/scores`))).scores.some((s: { id: number }) => s.id === res.score.id));
   });
 
+  test("posted score answers the top 10 from the same read as its rank", async () => {
+    for (let i = 0; i < 11; i++) await post({ name: `p${i}`, score: 100 + i, wave: 1 });
+    const res = await json(await post({ name: "mid", score: 105, wave: 2 }));
+    const list = await json(await fetch(`${base}/api/scores`));
+    assert.deepEqual(res.top, list.scores);
+    assert.equal(res.top[res.rank - 1].id, res.score.id);
+  });
+
+  test("a retry with the same runId stores the run once", async () => {
+    const first = await post({ ...valid, runId: "run-abc12345" });
+    assert.equal(first.status, 201);
+    const again = await post({ ...valid, runId: "run-abc12345" });
+    assert.equal(again.status, 200);
+    assert.equal((await json(again)).score.id, (await json(first)).score.id);
+    assert.equal((await json(await fetch(`${base}/api/scores`))).scores.length, 1);
+  });
+
+  test("a retry answers the run's current rank after a higher score lands", async () => {
+    for (let i = 0; i < 9; i++) await post({ name: `p${i}`, score: 100 + i, wave: 1 });
+    const mine = { name: "me", score: 50, wave: 1, runId: "run-me000001" };
+    assert.equal((await json(await post(mine))).rank, 10);
+    await post({ name: "late", score: 200, wave: 1 });
+    const retry = await json(await post(mine));
+    assert.equal(retry.rank, 11);
+    assert.equal(retry.top.length, 10);
+    assert.ok(!retry.top.some((s: { id: number }) => s.id === retry.score.id));
+  });
+
+  test("runId that is not 8 to 64 safe characters is rejected", async () => {
+    for (const runId of ["short", "x".repeat(65), "bad id!!", 12345678]) {
+      await expectError(await post({ ...valid, runId }), 400);
+    }
+  });
+
   test("limit defaults to 10 and caps the list", async () => {
     for (let i = 0; i < 12; i++) await post({ name: `p${i}`, score: i, wave: 1 });
     assert.equal((await json(await fetch(`${base}/api/scores`))).scores.length, 10);

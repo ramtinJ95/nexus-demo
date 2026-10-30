@@ -8,7 +8,7 @@ When the pylon falls, the game over panel asks for a name. The player types one 
 - `board-typing` lets W, A, S, D, R, and the arrow keys type into the name field without moving the drone or restarting the run.
 - `board-submit` posts the final score and wave on Enter or the submit button, then shows the top 10.
 - `board-highlight` marks the player's row with `data-mine="true"`, inside the top 10 or appended below it with its rank.
-- `board-offline` shows a visible notice when the API cannot be reached or answers 5xx. The form stays, so the player can retry, and restart still works.
+- `board-offline` shows a visible notice when the API cannot be reached or answers 5xx. The form stays, so the player can retry, and restart still works. A retry of the same run never stores it twice, even when the first attempt reached the API.
 - `board-rejected` shows the API's message when it rejects the name, for example a control character.
 
 ## How to get to it (user POV)

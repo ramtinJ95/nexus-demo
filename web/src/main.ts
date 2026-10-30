@@ -2,6 +2,7 @@ import "./style.css";
 import { startGame } from "./game";
 import { createHud } from "./hud";
 import { createInput } from "./input";
+import { newRunId } from "./leaderboard";
 import { createLeaderboardPanel } from "./leaderboard-panel";
 import { createRenderer } from "./render/draw";
 import { seedFromString } from "./sim/rng";
@@ -35,7 +36,7 @@ const game = startGame({
 });
 
 const leaderboard = createLeaderboardPanel(root.querySelector('[data-testid="leaderboard"]')!);
-game.on("gameOver", ({ score, wave }) => leaderboard.show({ score, wave }));
+game.on("gameOver", ({ score, wave }) => leaderboard.show({ id: newRunId(), score, wave }));
 
 function restart(): void {
   game.restart();

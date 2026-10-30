@@ -22,7 +22,7 @@ const notices: Record<Panel["kind"], string> = {
   hidden: "",
   naming: "",
   submitting: "Submitting…",
-  offline: "Leaderboard offline. Your score was not saved. Retry, or press Restart to play on.",
+  offline: "Leaderboard offline. Retry to save your score, or press Restart to play on.",
   board: "",
 };
 
@@ -40,12 +40,7 @@ export function createLeaderboardPanel(root: HTMLElement): LeaderboardPanel {
     form.hidden = panel.kind === "hidden" || panel.kind === "board";
     input.disabled = submit.disabled = panel.kind === "submitting";
     board.hidden = panel.kind !== "board";
-    notice.textContent =
-      panel.kind === "naming"
-        ? (panel.error ?? "")
-        : panel.kind === "board" && !panel.complete
-          ? "Board unavailable. Your score was saved."
-          : notices[panel.kind];
+    notice.textContent = panel.kind === "naming" ? (panel.error ?? "") : notices[panel.kind];
     board.replaceChildren(
       ...(panel.kind === "board" ? panel.rows : []).map((row) => {
         const li = document.createElement("li");

@@ -6,8 +6,8 @@ The API stores run scores and lists the best ones. The game reaches it on its ow
 
 - `api-health` answers `GET /api/health` with 200 `{ "ok": true }` once the database answers.
 - `api-list` answers `GET /api/scores?limit=N` with `{ "scores": [...] }`, best score first. `limit` defaults to 10 and must be 1 to 100.
-- `api-submit` stores `POST /api/scores` with `{ name, score, wave }` and answers 201 with `{ score, rank }`, the stored row and its 1-based place in the listed order among the scores stored so far.
-- `api-validate` rejects with 400 a name that is empty or over 16 characters after trimming, a score that is not an integer from 0 to 1,000,000, and a wave that is not an integer from 1 to 10,000.
+- `api-submit` stores `POST /api/scores` with `{ name, score, wave, runId? }` and answers 201 with `{ score, rank, top }`: the stored row, its 1-based rank, and the top 10, all from one read. A repeat with the same `runId` stores nothing and answers 200 with the first row's current rank and top 10.
+- `api-validate` rejects with 400 a name that is empty or over 16 characters after trimming, a score that is not an integer from 0 to 1,000,000, and a wave that is not an integer from 1 to 10,000, and a `runId` that is not 8 to 64 letters, digits, `_`, or `-`.
 
 ## How to get to it (user POV)
 
