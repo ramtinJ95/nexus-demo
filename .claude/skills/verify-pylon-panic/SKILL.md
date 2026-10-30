@@ -80,6 +80,8 @@ Read the game through these stable handles:
 | `[data-testid="setting-reduced-motion"]`, `[data-testid="setting-colorblind"]` | reduced motion and colorblind-safe colors checkboxes |
 | `[data-testid="game"]` with `data-enemy-kinds` | the enemy kinds on the field now, sorted and space-separated |
 | `[data-testid="hud-new-enemy"]` with `data-kind` | the banner for a kind that debuts this wave |
+| `[data-testid="hud-boss"]` with `data-phase`, `data-move`, `data-hp`, `data-x`, `data-y` | the boss health bar, shown while a boss lives. Phase `1` or `2`, the charge state (`stalk`, `windup`, `lunge`), health, and position in arena coordinates |
+| `[data-testid="hud-boss-phase"]`, `[data-testid="hud-boss-bar"]` | the boss phase label and the bar, whose width is the share of boss health left |
 | `[data-testid="game"]` with `data-touch` | `true` when the virtual sticks are shown |
 | `[data-testid="touch-stick-move"]` and `[data-testid="touch-stick-aim"]` with `data-active` | the two virtual sticks. `true` while a thumb holds it |
 

@@ -18,7 +18,7 @@ const PERIMETER = [
 const LAP_MS = PERIMETER.reduce((sum, leg) => sum + leg.ms, 0);
 
 /** Plays blind the way a turret player would: hold fire with the aim on the pylon and patrol the edge. */
-function player(page: Page) {
+export function player(page: Page) {
   let held: string[] = [];
   const patrolStart = Date.now();
   return {
@@ -50,7 +50,7 @@ function player(page: Page) {
   };
 }
 
-type Player = ReturnType<typeof player>;
+export type Player = ReturnType<typeof player>;
 
 type Debut = {
   kind: "dasher" | "splitter" | "shielded";
