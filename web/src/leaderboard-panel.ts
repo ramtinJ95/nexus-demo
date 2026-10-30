@@ -22,7 +22,7 @@ const notices: Record<Panel["kind"], string> = {
   hidden: "",
   naming: "",
   submitting: "Submitting…",
-  offline: "Leaderboard offline. Your score was not saved. Retry, or restart to play on.",
+  offline: "Leaderboard offline. Your score was not saved. Retry, or press Restart to play on.",
   board: "",
 };
 

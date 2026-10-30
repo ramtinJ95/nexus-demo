@@ -34,6 +34,7 @@ Run `npm run verify -- run leaderboard`. The journey does the following.
 
 ## Gotchas
 
+- Run this journey with `run`, never `capture` on a stack you keep. It stops the stack's API and does not start it again, so later journeys on that stack fail until `down` and `up`.
 - Chromium logs `Failed to load resource ... 502` for every request to the stopped API. The journey calls `allowConsoleError` for that message only after it stops the API, so any earlier error still fails the run.
 - The second run gets no input, so it takes about 60 seconds to fall. The journey waits up to 120 seconds.
 - The field is not focused on game over, because R on the panel restarts the run. Click the field before typing.
