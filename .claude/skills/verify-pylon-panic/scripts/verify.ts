@@ -102,11 +102,14 @@ async function capture(name: string, seed: string, runName: string): Promise<str
       page,
       webUrl: stack.webUrl,
       seed,
-      async open(path = "/") {
+      async open(path = "/", options = {}) {
         const url = new URL(path, stack.webUrl);
         url.searchParams.set("seed", seed);
         await page.goto(url.href);
-        await page.getByTestId("game").waitFor();
+        await page.locator('[data-testid="game"][data-screen="title"]').waitFor();
+        if (options.title) return;
+        await page.keyboard.press("Enter");
+        await page.locator('[data-testid="game"][data-screen="playing"]').waitFor();
       },
       async shot(shotName) {
         await page.screenshot({ path: join(out, `${shotName}.png`) });

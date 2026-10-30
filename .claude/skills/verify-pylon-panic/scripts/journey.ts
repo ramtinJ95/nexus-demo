@@ -4,8 +4,11 @@ export type JourneyContext = {
   page: Page;
   webUrl: string;
   seed: string;
-  /** Loads `path` on the web app with `?seed=` set, and waits for the game root. */
-  open(path?: string): Promise<void>;
+  /**
+   * Loads `path` on the web app with `?seed=` set and waits for the game root. Then it presses Enter on the title
+   * screen and waits for play, unless `title` is set.
+   */
+  open(path?: string, options?: { title?: boolean }): Promise<void>;
   /** Saves `<name>.png` of the whole page. */
   shot(name: string): Promise<void>;
   /** Saves `<name>.json`, for side effects such as API responses. */

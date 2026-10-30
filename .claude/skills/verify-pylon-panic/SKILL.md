@@ -42,11 +42,11 @@ Run it first whenever something looks off. If Chromium or ffmpeg is missing, rer
 A journey is one file in `scripts/journeys/` that exports a `Journey` (see `scripts/journey.ts`), registered by name in `scripts/journeys/index.ts`. The harness gives it:
 
 - `page`, a Playwright page at 1280x720, recording video;
-- `open(path)`, which loads the web app with `?seed=` set and waits for `[data-testid="game"]`;
+- `open(path, options)`, which loads the web app with `?seed=` set, waits for the title screen, presses Enter, and waits for `data-screen="playing"`. Pass `{ title: true }` to stop on the title screen;
 - `shot(name)`, `save(name, data)`, and `check(ok, claim)` for evidence and assertions;
 - `clip.start()` and `clip.stop()`, which mark the stretch that becomes the GIF.
 
-Drive the game only through real input. Use `page.keyboard.down("KeyW")` and `page.keyboard.up("KeyW")` to move, `page.mouse.move(x, y)` to aim, and `page.mouse.down()` and `page.mouse.up()` to fire. Map arena coordinates (1280x720) to the page through the canvas bounding box, as `journeys/core-loop.ts` does. Never call game internals, never set state from the page, and never add a test-only endpoint to reach a state. If a state is slow to reach by playing, choose a seed that reaches it sooner.
+Drive the game only through real input. Use `page.keyboard.down("KeyW")` and `page.keyboard.up("KeyW")` to move, `page.mouse.move(x, y)` to aim, and `page.mouse.down()` and `page.mouse.up()` to fire. Map arena coordinates (1280x720) to the page through the arena canvas's bounding box, `[data-testid="game"] > canvas`, as `journeys/core-loop.ts` does. A bare `canvas` locator also matches the title logo. Never call game internals, never set state from the page, and never add a test-only endpoint to reach a state. If a state is slow to reach by playing, choose a seed that reaches it sooner.
 
 Read the game through these stable handles:
 
@@ -61,6 +61,18 @@ Read the game through these stable handles:
 | `[data-testid="restart"]` | restart button. `R` also restarts |
 | `[data-testid="game"]` with `data-reduced-motion` | `true` when reduced motion is on |
 | `[data-testid="game"]` with `data-shake` | `true` while the screen shakes |
+| `[data-testid="game"]` with `data-screen` | `title`, `playing` or `paused`. It keeps the menu's value while settings are open |
+| `[data-testid="game"]` with `data-settings` | `true` while the settings panel is open |
+| `[data-testid="game"]` with `data-palette` | `neon` or `colorblind` |
+| `[data-testid="game"]` with `data-volume` | sound volume as a whole percent |
+| `[data-testid="title-screen"]` | the title screen, with `title-logo` (the logo canvas) and `how-to-play` |
+| `[data-testid="start"]` | starts the run. Enter also starts it from the title screen |
+| `[data-testid="title-settings"]`, `[data-testid="pause-settings"]` | open the settings panel from the title screen or the pause overlay |
+| `[data-testid="pause-overlay"]` | the pause overlay. Escape opens and closes it during a run |
+| `[data-testid="resume"]` | resumes a paused run |
+| `[data-testid="settings"]` | the settings panel. `settings-back` or Escape closes it |
+| `[data-testid="setting-volume"]`, `[data-testid="setting-volume-value"]` | volume range, 0 to 100 in steps of 5, and its `60%` style readout |
+| `[data-testid="setting-reduced-motion"]`, `[data-testid="setting-colorblind"]` | reduced motion and colorblind-safe colors checkboxes |
 
 A new feature adds its own `data-testid` handles, adds a row here, and adds a feature file under `features/`.
 

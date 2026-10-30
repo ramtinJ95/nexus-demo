@@ -19,8 +19,8 @@ async function watchShake(page: JourneyContext["page"]): Promise<void> {
   });
 }
 
-async function fight(page: JourneyContext["page"], seconds: number, onTick?: (i: number) => Promise<void>): Promise<void> {
-  const box = await page.locator("canvas").boundingBox();
+export async function fight(page: JourneyContext["page"], seconds: number, onTick?: (i: number) => Promise<void>, radius = 200): Promise<void> {
+  const box = await page.locator('[data-testid="game"] > canvas').boundingBox();
   if (!box) throw new Error("canvas has no layout box");
   const scale = Math.min(box.width / ARENA.width, box.height / ARENA.height);
   const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
@@ -29,7 +29,7 @@ async function fight(page: JourneyContext["page"], seconds: number, onTick?: (i:
   await aimAt(0, 220);
   await page.mouse.down();
   for (let i = 0; i < seconds * 20; i++) {
-    await aimAt(i * 0.12, 200);
+    await aimAt(i * 0.12, radius);
     await onTick?.(i);
     await page.waitForTimeout(50);
   }

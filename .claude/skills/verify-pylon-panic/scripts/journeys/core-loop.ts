@@ -15,7 +15,7 @@ export const coreLoop: Journey = {
     check(number(await hud("hud-score")) === 0, "the run starts with score 0");
     await shot("01-start");
 
-    const box = await page.locator("canvas").boundingBox();
+    const box = await page.locator('[data-testid="game"] > canvas').boundingBox();
     if (!box) throw new Error("canvas has no layout box");
     const scale = Math.min(box.width / ARENA.width, box.height / ARENA.height);
     const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
