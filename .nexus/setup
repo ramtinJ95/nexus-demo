@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Runs once per template. Every step is idempotent, so a rerun converges.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+# Playwright's bundled Chromium downloads from storage.googleapis.com, which the egress allowlist blocks.
+# Debian's chromium tracks the same Chrome build, and the verify skill launches it by path.
+sudo apt-get update -qq
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends chromium ffmpeg fonts-liberation
+
+npm ci --no-audit --no-fund
+# Playwright's own ffmpeg encodes recordVideo. It downloads from an allowed fallback host.
+npx playwright install ffmpeg
+
+chromium --version
+ffmpeg -version | head -n 1
