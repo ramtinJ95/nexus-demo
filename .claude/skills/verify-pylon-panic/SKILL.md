@@ -80,6 +80,11 @@ Read the game through these stable handles:
 | `[data-testid="setting-reduced-motion"]`, `[data-testid="setting-colorblind"]` | reduced motion and colorblind-safe colors checkboxes |
 | `[data-testid="game"]` with `data-enemy-kinds` | the enemy kinds on the field now, sorted and space-separated |
 | `[data-testid="hud-new-enemy"]` with `data-kind` | the banner for a kind that debuts this wave |
+| `[data-testid="start-daily"]` | starts today's daily challenge. Its label is `Daily` and the UTC date |
+| `[data-testid="game"]` with `data-mode` | `classic` or `daily` |
+| `[data-testid="hud-mode"]` | `DAILY` and the date in a daily run. Hidden in classic |
+| `[data-testid="leaderboard"]` with `data-board` | `classic` or `daily`, the board the run goes to |
+| `[data-testid="leaderboard-title"]` | the board's title, `Top 10` or `Daily 2026-10-30`. Shown with the board |
 | `[data-testid="game"]` with `data-touch` | `true` when the virtual sticks are shown |
 | `[data-testid="touch-stick-move"]` and `[data-testid="touch-stick-aim"]` with `data-active` | the two virtual sticks. `true` while a thumb holds it |
 
