@@ -4,6 +4,7 @@ import { enemyDasher, enemyShielded, enemySplitter } from "./enemy-variety.ts";
 import { gameFeel } from "./game-feel.ts";
 import { leaderboard } from "./leaderboard.ts";
 import { leaderboardApi } from "./leaderboard-api.ts";
+import { touchLandscape, touchPortrait } from "./touch-controls.ts";
 
 export const journeys: Record<string, Journey> = {
   "core-loop": coreLoop,
@@ -13,4 +14,6 @@ export const journeys: Record<string, Journey> = {
   "game-feel": gameFeel,
   leaderboard,
   "leaderboard-api": leaderboardApi,
+  "touch-portrait": touchPortrait,
+  "touch-landscape": touchLandscape,
 };
