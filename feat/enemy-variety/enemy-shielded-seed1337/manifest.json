@@ -1,0 +1,45 @@
+{
+  "journey": "enemy-shielded",
+  "feature": "enemy-variety.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:34223/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "the drone holds the pylon until wave 4",
+      "ok": true
+    },
+    {
+      "claim": "wave 4 announces a new enemy",
+      "ok": true
+    },
+    {
+      "claim": "the wave 4 banner names the shielded bug",
+      "ok": true
+    },
+    {
+      "claim": "wave 4 opens with a shielded bug",
+      "ok": true
+    },
+    {
+      "claim": "crawlers, dashers, splitters and shielded bugs share the field in wave 4",
+      "ok": true
+    },
+    {
+      "claim": "the drone clears wave 4, every shielded bug included",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-shielded-arrives.png",
+    "02-shielded-edge-patrol.png",
+    "03-mixed-wave.png",
+    "04-wave-4-cleared.png",
+    "enemy-shielded.gif",
+    "enemy-shielded.mp4",
+    "enemy-shielded.webm"
+  ],
+  "capturedAt": "2026-10-30T12:03:50.383Z"
+}

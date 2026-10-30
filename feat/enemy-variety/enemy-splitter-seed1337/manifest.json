@@ -1,0 +1,44 @@
+{
+  "journey": "enemy-splitter",
+  "feature": "enemy-variety.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:39505/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "the drone holds the pylon until wave 3",
+      "ok": true
+    },
+    {
+      "claim": "wave 3 announces a new enemy",
+      "ok": true
+    },
+    {
+      "claim": "the wave 3 banner names the splitter",
+      "ok": true
+    },
+    {
+      "claim": "wave 3 opens with a splitter",
+      "ok": true
+    },
+    {
+      "claim": "a splitter shot down by the drone breaks into splitlings",
+      "ok": true
+    },
+    {
+      "claim": "the drone clears wave 3, every splitter included",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-splitter-arrives.png",
+    "02-splitter-splits.png",
+    "04-wave-3-cleared.png",
+    "enemy-splitter.gif",
+    "enemy-splitter.mp4",
+    "enemy-splitter.webm"
+  ],
+  "capturedAt": "2026-10-30T12:02:13.253Z"
+}

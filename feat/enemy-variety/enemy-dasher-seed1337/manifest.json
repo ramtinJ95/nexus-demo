@@ -1,0 +1,40 @@
+{
+  "journey": "enemy-dasher",
+  "feature": "enemy-variety.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:32787/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "the drone holds the pylon until wave 2",
+      "ok": true
+    },
+    {
+      "claim": "wave 2 announces a new enemy",
+      "ok": true
+    },
+    {
+      "claim": "the wave 2 banner names the dasher",
+      "ok": true
+    },
+    {
+      "claim": "wave 2 opens with a dasher",
+      "ok": true
+    },
+    {
+      "claim": "the drone clears wave 2, every dasher included",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-dasher-arrives.png",
+    "02-dasher-attacks.png",
+    "04-wave-2-cleared.png",
+    "enemy-dasher.gif",
+    "enemy-dasher.mp4",
+    "enemy-dasher.webm"
+  ],
+  "capturedAt": "2026-10-30T12:01:04.165Z"
+}
