@@ -14,7 +14,8 @@ export type Game = {
   setPaused(paused: boolean): void;
   /** Subscribes to one event type. Returns an unsubscribe function. */
   on<T extends GameEventType>(type: T, handler: GameEventHandler<T>): () => void;
-  restart(): void;
+  /** Starts a new run. A given `seed` replaces the current one for this and later restarts. */
+  restart(seed?: number): void;
   stop(): void;
 };
 
@@ -29,8 +30,9 @@ export type GameOptions = {
 /** A hidden tab resumes with one long frame. Capping it keeps catch-up to a handful of ticks instead of a spiral. */
 const MAX_FRAME_SECONDS = 0.25;
 
-export function startGame({ seed, settings, readInput, onFrame, paused = false }: GameOptions): Game {
+export function startGame({ seed: initialSeed, settings, readInput, onFrame, paused = false }: GameOptions): Game {
   const dt = 1 / settings.ticksPerSecond;
+  let seed = initialSeed;
   const handlers = new Map<GameEventType, Set<(event: GameEvent) => void>>();
   let state = createGame(seed, settings);
   let accumulator = 0;
@@ -70,7 +72,8 @@ export function startGame({ seed, settings, readInput, onFrame, paused = false }
       set.add(erased);
       return () => set.delete(erased);
     },
-    restart() {
+    restart(next = seed) {
+      seed = next;
       state = createGame(seed, settings);
       accumulator = 0;
     },
