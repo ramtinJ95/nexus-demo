@@ -36,5 +36,6 @@ Each feature file starts with an H1 title and one paragraph on what the player s
 | [Game feel](./game-feel.md) | `game-feel` | hit sparks, death bursts, hit flash, muzzle flash, screen shake and pylon glow pulse on damage, reduced motion |
 | [Title and settings](./title-settings.md) | `title-settings` | title screen and logo, how to play, settings panel (volume, reduced motion, colorblind palette) kept across reloads, pause and resume on Escape |
 | [Leaderboard](./leaderboard.md) | `leaderboard` | name entry on game over, submitting, the top 10 with the player's row highlighted, the API-down notice |
+| [Daily challenge](./daily.md) | `daily` | the Daily button, a seed from the UTC date shared by every player that day, the DAILY HUD tag, restart keeps the daily seed, the per-day board |
 | [Leaderboard API](./leaderboard-api.md) | `leaderboard-api` | health, listing, submitting, and validating scores |
 | [Touch controls](./touch-controls.md) | `touch-portrait`, `touch-landscape` | twin virtual sticks, auto-fire while aiming, phone layout in portrait and landscape, tap to restart |

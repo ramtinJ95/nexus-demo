@@ -1,6 +1,7 @@
 import "./style.css";
 import "./touch.css";
 import { createSfx } from "./audio";
+import { dailySeed, dayOf, type Day, type Mode } from "./daily";
 import { startGame } from "./game";
 import { createEffects, frameEffects } from "./fx/effects";
 import { createHud } from "./hud";
@@ -44,6 +45,7 @@ const osReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const storage = { getItem: (key: string) => localStorage.getItem(key), setItem: (key: string, value: string) => localStorage.setItem(key, value) };
 let prefs = loadPrefs(storage, { volume: 0.6, reducedMotion: osReducedMotion, palette: "neon" });
 let screen: Screen = initialScreen;
+let mode: Mode = { kind: "classic" };
 const settings = { ...defaultSettings, fx: { ...defaultSettings.fx } };
 const renderer = createRenderer(canvas, settings);
 const input = createInput(root, canvas, renderer.viewport);
@@ -85,7 +87,34 @@ const menus = createMenus(root, {
     applyPrefs({ ...prefs, ...patch });
     savePrefs(storage, prefs);
   },
+  daily() {
+    const day = labelToday();
+    mode = { kind: "daily", day };
+    showMode();
+    restart(dailySeed(day));
+    act("start");
+  },
 });
+
+const dailyButton = root.querySelector<HTMLElement>('[data-testid="start-daily"]')!;
+const hudMode = root.querySelector<HTMLElement>('[data-testid="hud-mode"]')!;
+
+/** The label and the run read one `dayOf` call, so a click never starts a day other than the one shown. */
+function labelToday(): Day {
+  const day = dayOf(new Date());
+  const label = `Daily ${day}`;
+  if (dailyButton.textContent !== label) dailyButton.textContent = label;
+  return day;
+}
+// A title screen left open, or a tab resumed, across midnight UTC relabels within a second.
+setInterval(labelToday, 1000);
+labelToday();
+
+function showMode(): void {
+  root.dataset["mode"] = mode.kind;
+  hudMode.hidden = mode.kind === "classic";
+  hudMode.textContent = mode.kind === "daily" ? `DAILY ${mode.day}` : "";
+}
 
 function applyPrefs(next: Prefs): void {
   prefs = next;
@@ -107,16 +136,18 @@ function redrawLogo(): void {
 }
 
 const leaderboard = createLeaderboardPanel(root.querySelector('[data-testid="leaderboard"]')!);
-game.on("gameOver", ({ score, wave }) => leaderboard.show({ id: newRunId(), score, wave }));
+game.on("gameOver", ({ score, wave }) =>
+  leaderboard.show({ id: newRunId(), score, wave, day: mode.kind === "daily" ? mode.day : null }),
+);
 
-function restart(): void {
-  game.restart();
-  fx = createEffects(seed);
+function restart(nextSeed = game.state.seed): void {
+  game.restart(nextSeed);
+  fx = createEffects(nextSeed);
   fxEvents = [];
   leaderboard.reset();
 }
 
-root.querySelector('[data-testid="restart"]')!.addEventListener("click", restart);
+root.querySelector('[data-testid="restart"]')!.addEventListener("click", () => restart());
 window.addEventListener("keydown", (e) => {
   sfx.resume();
   if (e.code === "KeyR" && !e.repeat && screen.kind === "playing" && !(e.target instanceof HTMLInputElement)) restart();
@@ -128,4 +159,5 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("pointerdown", () => sfx.resume());
 window.addEventListener("resize", redrawLogo);
 applyPrefs(prefs);
+showMode();
 menus.show(screen);

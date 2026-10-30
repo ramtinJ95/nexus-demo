@@ -33,13 +33,17 @@ export function createLeaderboardPanel(root: HTMLElement): LeaderboardPanel {
   const submit = el<HTMLButtonElement>("leaderboard-submit");
   const notice = el("leaderboard-notice");
   const board = el<HTMLOListElement>("leaderboard-board");
+  const title = el("leaderboard-title");
   let panel: Panel = { kind: "hidden" };
 
   function render(): void {
     root.dataset["state"] = panel.kind;
     form.hidden = panel.kind === "hidden" || panel.kind === "board";
     input.disabled = submit.disabled = panel.kind === "submitting";
-    board.hidden = panel.kind !== "board";
+    board.hidden = title.hidden = panel.kind !== "board";
+    const day = panel.kind === "hidden" ? null : panel.run.day;
+    root.dataset["board"] = day === null ? "classic" : "daily";
+    title.textContent = day === null ? "Top 10" : `Daily ${day}`;
     notice.textContent = panel.kind === "naming" ? (panel.error ?? "") : notices[panel.kind];
     board.replaceChildren(
       ...(panel.kind === "board" ? panel.rows : []).map((row) => {

@@ -7,9 +7,9 @@ export type Menus = {
   showPrefs(prefs: Prefs, motionForced: boolean): void;
 };
 
-export type MenuHandlers = { act(action: ScreenAction): void; change(patch: Partial<Prefs>): void };
+export type MenuHandlers = { act(action: ScreenAction): void; change(patch: Partial<Prefs>): void; daily(): void };
 
-export function createMenus(root: HTMLElement, { act, change }: MenuHandlers): Menus {
+export function createMenus(root: HTMLElement, { act, change, daily }: MenuHandlers): Menus {
   const el = <T extends HTMLElement = HTMLElement>(id: string) => root.querySelector<T>(`[data-testid="${id}"]`)!;
   const title = el("title-screen");
   const pause = el("pause-overlay");
@@ -27,6 +27,7 @@ export function createMenus(root: HTMLElement, { act, change }: MenuHandlers): M
     ["settings-back", "closeSettings"],
   ];
   for (const [id, action] of buttons) el(id).addEventListener("click", () => act(action));
+  el("start-daily").addEventListener("click", daily);
   volume.addEventListener("input", () => change({ volume: Number(volume.value) / 100 }));
   reducedMotion.addEventListener("change", () => change({ reducedMotion: reducedMotion.checked }));
   colorblind.addEventListener("change", () => change({ palette: colorblind.checked ? "colorblind" : "neon" }));

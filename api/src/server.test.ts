@@ -66,8 +66,9 @@ describe("api", () => {
     const { score } = await json(res);
     assert.equal(typeof score.id, "number");
     assert.ok(!Number.isNaN(Date.parse(score.createdAt)));
-    assert.deepEqual(Object.keys(score).sort(), ["createdAt", "id", "name", "score", "wave"]);
+    assert.deepEqual(Object.keys(score).sort(), ["createdAt", "day", "id", "name", "score", "wave"]);
     assert.deepEqual({ name: score.name, score: score.score, wave: score.wave }, valid);
+    assert.equal(score.day, null);
     const list = await json(await fetch(`${base}/api/scores`));
     assert.deepEqual(list.scores, [score]);
   });
@@ -144,6 +145,43 @@ describe("api", () => {
     for (const runId of ["short", "x".repeat(65), "bad id!!", 12345678]) {
       await expectError(await post({ ...valid, runId }), 400);
     }
+  });
+
+  test("a daily score lists on its day's board and not on the classic board", async () => {
+    const daily = await json(await post({ ...valid, name: "daily", day: "2026-10-30" }));
+    assert.equal(daily.score.day, "2026-10-30");
+    await post({ ...valid, name: "classic" });
+    await post({ ...valid, name: "nullday", day: null });
+    const board = await json(await fetch(`${base}/api/scores?day=2026-10-30`));
+    assert.deepEqual(board.scores.map((s: { name: string }) => s.name), ["daily"]);
+    const classic = await json(await fetch(`${base}/api/scores`));
+    assert.deepEqual(classic.scores.map((s: { name: string }) => s.name), ["classic", "nullday"]);
+  });
+
+  test("two days are separate boards with their own ranks", async () => {
+    await post({ name: "yesterday", score: 500, wave: 9, day: "2026-10-29" });
+    await post({ name: "classic", score: 900, wave: 9 });
+    const today = await json(await post({ name: "today", score: 10, wave: 1, day: "2026-10-30" }));
+    assert.equal(today.rank, 1);
+    assert.deepEqual(today.top.map((s: { name: string }) => s.name), ["today"]);
+    const later = await json(await post({ name: "later", score: 5, wave: 1, day: "2026-10-30" }));
+    assert.equal(later.rank, 2);
+    const classic = await json(await post({ name: "low", score: 1, wave: 1 }));
+    assert.equal(classic.rank, 2);
+    assert.deepEqual(classic.top.map((s: { name: string }) => s.name), ["classic", "low"]);
+    const yesterday = await json(await fetch(`${base}/api/scores?day=2026-10-29`));
+    assert.deepEqual(yesterday.scores.map((s: { name: string }) => s.name), ["yesterday"]);
+  });
+
+  test("day that is not a real YYYY-MM-DD date is rejected in the body and the query", async () => {
+    for (const day of ["2026-02-30", "2026-1-1", "2026-13-01", "20261030", "", 20261030, true, ["2026-10-30"]]) {
+      await expectError(await post({ ...valid, day }), 400);
+    }
+    for (const day of ["2026-02-30", "2026-1-1", "today", ""]) {
+      await expectError(await fetch(`${base}/api/scores?day=${day}`), 400);
+    }
+    assert.deepEqual((await json(await fetch(`${base}/api/scores`))).scores, []);
+    assert.equal((await post({ ...valid, day: "2028-02-29" })).status, 201);
   });
 
   test("limit defaults to 10 and caps the list", async () => {
