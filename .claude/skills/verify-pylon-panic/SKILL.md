@@ -59,6 +59,8 @@ Read the game through these stable handles:
 | `[data-testid="hud-seed"]` | the seed of this run |
 | `[data-testid="game-over"]` | the game over panel |
 | `[data-testid="restart"]` | restart button. `R` also restarts |
+| `[data-testid="game"]` with `data-reduced-motion` | `true` when reduced motion is on |
+| `[data-testid="game"]` with `data-shake` | `true` while the screen shakes |
 
 A new feature adds its own `data-testid` handles, adds a row here, and adds a feature file under `features/`.
 
