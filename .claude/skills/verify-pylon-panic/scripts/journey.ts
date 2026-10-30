@@ -1,0 +1,24 @@
+import type { Page } from "playwright";
+
+export type JourneyContext = {
+  page: Page;
+  webUrl: string;
+  seed: string;
+  /** Loads `path` on the web app with `?seed=` set, and waits for the game root. */
+  open(path?: string): Promise<void>;
+  /** Saves `<name>.png` of the whole page. */
+  shot(name: string): Promise<void>;
+  /** Saves `<name>.json`, for side effects such as API responses. */
+  save(name: string, data: unknown): void;
+  /** Records a named assertion in the manifest and throws when it fails. */
+  check(ok: boolean, claim: string): void;
+  /** Marks the stretch of the recording that becomes the GIF. Keep it under 8 seconds. */
+  clip: { start(): void; stop(): void };
+};
+
+export type Journey = {
+  /** The feature map file this journey proves, relative to `features/`. */
+  feature: string;
+  description: string;
+  run(ctx: JourneyContext): Promise<void>;
+};
