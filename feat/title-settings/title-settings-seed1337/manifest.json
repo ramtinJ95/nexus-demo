@@ -2,7 +2,7 @@
   "journey": "title-settings",
   "feature": "title-settings.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:32771/?seed=1337",
+  "url": "http://127.0.0.1:36753/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -110,5 +110,5 @@
     "title-settings.mp4",
     "title-settings.webm"
   ],
-  "capturedAt": "2026-10-30T12:58:53.155Z"
+  "capturedAt": "2026-10-30T13:07:59.778Z"
 }
