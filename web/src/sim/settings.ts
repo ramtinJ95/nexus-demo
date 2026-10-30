@@ -15,6 +15,17 @@ export type Settings = {
     restSeconds: number;
     firstWaveDelay: number;
   };
+  fx: {
+    /** Turns off screen shake, hit flash and muzzle flash. Particles and the pylon pulse stay. */
+    reducedMotion: boolean;
+    /** Kick is trauma (0 to 1) added per pylon hit; the offset is maxOffset * trauma². */
+    shake: { kick: number; maxOffset: number; decayPerSecond: number };
+    hitFlashSeconds: number;
+    muzzleFlashSeconds: number;
+    pylonPulseSeconds: number;
+    /** Drag is the fraction of velocity lost per second. */
+    particles: { perHit: number; perDeath: number; speed: number; drag: number; lifeSeconds: number; max: number };
+  };
 };
 
 /** Distances are arena pixels, times are seconds, speeds are pixels per second. */
@@ -33,5 +44,13 @@ export const defaultSettings: Settings = {
     speedGrowthPerWave: 0.05,
     restSeconds: 3,
     firstWaveDelay: 1.5,
+  },
+  fx: {
+    reducedMotion: false,
+    shake: { kick: 0.7, maxOffset: 9, decayPerSecond: 2.5 },
+    hitFlashSeconds: 0.08,
+    muzzleFlashSeconds: 0.05,
+    pylonPulseSeconds: 0.5,
+    particles: { perHit: 5, perDeath: 18, speed: 240, drag: 0.95, lifeSeconds: 0.5, max: 400 },
   },
 };
