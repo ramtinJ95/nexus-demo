@@ -1,6 +1,7 @@
 import { palettes, type PaletteName } from "./render/palette";
 
-export type Prefs = { /** 0 to 1. */ volume: number; reducedMotion: boolean; palette: PaletteName };
+/** Volumes are 0 to 1. */
+export type Prefs = { musicVolume: number; sfxVolume: number; reducedMotion: boolean; palette: PaletteName };
 
 export const PREFS_KEY = "pylon-panic.prefs";
 
@@ -13,12 +14,19 @@ export function parsePrefs(raw: string | null, fallback: Prefs): Prefs {
     return fallback;
   }
   if (typeof data !== "object" || data === null) return fallback;
-  const { volume, reducedMotion, palette } = data as Record<string, unknown>;
+  const { volume, musicVolume, sfxVolume, reducedMotion, palette } = data as Record<string, unknown>;
+  // Before music, one `volume` set the effects; it seeds both so a player's old setting carries over.
+  const legacy = parseVolume(volume);
   return {
-    volume: typeof volume === "number" && Number.isFinite(volume) ? Math.min(1, Math.max(0, volume)) : fallback.volume,
+    musicVolume: parseVolume(musicVolume) ?? legacy ?? fallback.musicVolume,
+    sfxVolume: parseVolume(sfxVolume) ?? legacy ?? fallback.sfxVolume,
     reducedMotion: typeof reducedMotion === "boolean" ? reducedMotion : fallback.reducedMotion,
     palette: typeof palette === "string" && Object.hasOwn(palettes, palette) ? (palette as PaletteName) : fallback.palette,
   };
+}
+
+function parseVolume(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : undefined;
 }
 
 /** Storage throws in some private modes and sandboxes; then prefs last only for the page. */

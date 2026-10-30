@@ -14,8 +14,12 @@ export function createMenus(root: HTMLElement, { act, change, daily }: MenuHandl
   const title = el("title-screen");
   const pause = el("pause-overlay");
   const settings = el("settings");
-  const volume = el<HTMLInputElement>("setting-volume");
-  const volumeValue = el("setting-volume-value");
+  // Each key doubles as the root dataset key, so `musicVolume` shows as `data-music-volume`.
+  const volumes = (["music", "sfx"] as const).map((id) => ({
+    key: `${id}Volume` as const,
+    input: el<HTMLInputElement>(`setting-${id}-volume`),
+    value: el(`setting-${id}-volume-value`),
+  }));
   const reducedMotion = el<HTMLInputElement>("setting-reduced-motion");
   const colorblind = el<HTMLInputElement>("setting-colorblind");
 
@@ -28,7 +32,7 @@ export function createMenus(root: HTMLElement, { act, change, daily }: MenuHandl
   ];
   for (const [id, action] of buttons) el(id).addEventListener("click", () => act(action));
   el("start-daily").addEventListener("click", daily);
-  volume.addEventListener("input", () => change({ volume: Number(volume.value) / 100 }));
+  for (const { key, input } of volumes) input.addEventListener("input", () => change({ [key]: Number(input.value) / 100 }));
   reducedMotion.addEventListener("change", () => change({ reducedMotion: reducedMotion.checked }));
   colorblind.addEventListener("change", () => change({ palette: colorblind.checked ? "colorblind" : "neon" }));
 
@@ -42,13 +46,15 @@ export function createMenus(root: HTMLElement, { act, change, daily }: MenuHandl
       root.dataset["settings"] = String(menu?.settings ?? false);
     },
     showPrefs(prefs, motionForced) {
-      const percent = String(Math.round(prefs.volume * 100));
-      volume.value = percent;
-      volumeValue.textContent = `${percent}%`;
+      for (const { key, input, value } of volumes) {
+        const percent = String(Math.round(prefs[key] * 100));
+        input.value = percent;
+        value.textContent = `${percent}%`;
+        root.dataset[key] = percent;
+      }
       reducedMotion.checked = motionForced || prefs.reducedMotion;
       reducedMotion.disabled = motionForced;
       colorblind.checked = prefs.palette === "colorblind";
-      root.dataset["volume"] = percent;
       root.dataset["reducedMotion"] = String(reducedMotion.checked);
       root.dataset["palette"] = prefs.palette;
     },

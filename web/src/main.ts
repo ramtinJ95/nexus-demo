@@ -43,7 +43,7 @@ const motionForced = urlForcesReducedMotion();
 const osReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 /** Reading the `localStorage` global itself throws in some sandboxes, so it is touched only inside calls that prefs guards. */
 const storage = { getItem: (key: string) => localStorage.getItem(key), setItem: (key: string, value: string) => localStorage.setItem(key, value) };
-let prefs = loadPrefs(storage, { volume: 0.6, reducedMotion: osReducedMotion, palette: "neon" });
+let prefs = loadPrefs(storage, { musicVolume: 0.5, sfxVolume: 0.6, reducedMotion: osReducedMotion, palette: "neon" });
 let screen: Screen = initialScreen;
 let mode: Mode = { kind: "classic" };
 const settings = { ...defaultSettings, fx: { ...defaultSettings.fx } };
@@ -119,7 +119,7 @@ function showMode(): void {
 function applyPrefs(next: Prefs): void {
   prefs = next;
   settings.fx.reducedMotion = motionForced || prefs.reducedMotion;
-  sfx.setVolume(prefs.volume);
+  sfx.setVolume(prefs.sfxVolume);
   menus.showPrefs(prefs, motionForced);
   redrawLogo();
 }

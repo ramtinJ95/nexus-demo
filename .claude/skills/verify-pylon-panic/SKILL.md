@@ -69,14 +69,15 @@ Read the game through these stable handles:
 | `[data-testid="game"]` with `data-screen` | `title`, `playing` or `paused`. It keeps the menu's value while settings are open |
 | `[data-testid="game"]` with `data-settings` | `true` while the settings panel is open |
 | `[data-testid="game"]` with `data-palette` | `neon` or `colorblind` |
-| `[data-testid="game"]` with `data-volume` | sound volume as a whole percent |
+| `[data-testid="game"]` with `data-music-volume` and `data-sfx-volume` | music and effects volumes as whole percents |
 | `[data-testid="title-screen"]` | the title screen, with `title-logo` (the logo canvas) and `how-to-play` |
 | `[data-testid="start"]` | starts the run. Enter also starts it from the title screen |
 | `[data-testid="title-settings"]`, `[data-testid="pause-settings"]` | open the settings panel from the title screen or the pause overlay |
 | `[data-testid="pause-overlay"]` | the pause overlay. Escape opens and closes it during a run |
 | `[data-testid="resume"]` | resumes a paused run |
 | `[data-testid="settings"]` | the settings panel. `settings-back` or Escape closes it |
-| `[data-testid="setting-volume"]`, `[data-testid="setting-volume-value"]` | volume range, 0 to 100 in steps of 5, and its `60%` style readout |
+| `[data-testid="setting-music-volume"]`, `[data-testid="setting-music-volume-value"]` | music volume range, 0 to 100 in steps of 5, and its `50%` style readout |
+| `[data-testid="setting-sfx-volume"]`, `[data-testid="setting-sfx-volume-value"]` | effects volume range, 0 to 100 in steps of 5, and its `60%` style readout |
 | `[data-testid="setting-reduced-motion"]`, `[data-testid="setting-colorblind"]` | reduced motion and colorblind-safe colors checkboxes |
 | `[data-testid="game"]` with `data-enemy-kinds` | the enemy kinds on the field now, sorted and space-separated |
 | `[data-testid="hud-new-enemy"]` with `data-kind` | the banner for a kind that debuts this wave |

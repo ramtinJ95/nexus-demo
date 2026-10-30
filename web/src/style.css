@@ -306,6 +306,10 @@ kbd {
   width: 200px;
 }
 
+.field:has(input[type="range"]) span {
+  min-width: 8ch;
+}
+
 .field output {
   min-width: 4ch;
   color: #fff;
