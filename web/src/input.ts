@@ -21,7 +21,7 @@ export function createInput(canvas: HTMLCanvasElement, viewport: () => Viewport)
   let firing = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (!(e.code in directions)) return;
+    if (!(e.code in directions) || e.target instanceof HTMLInputElement) return;
     held.add(e.code);
     e.preventDefault();
   };

@@ -36,6 +36,48 @@
         <button type="button" data-testid="restart">Restart</button>
         <span class="hint">or press R</span>
       </section>
+      <section class="menu" data-testid="title-screen">
+        <canvas class="logo" data-testid="title-logo" aria-label="Pylon Panic"></canvas>
+        <ul class="how-to-play" data-testid="how-to-play">
+          <li><kbd>WASD</kbd> or arrows move</li>
+          <li>The mouse aims</li>
+          <li>Hold left click to fire</li>
+          <li>Keep the bugs off the pylon</li>
+          <li><kbd>Esc</kbd> pauses</li>
+        </ul>
+        <div class="menu-buttons">
+          <button type="button" data-testid="start">Start</button>
+          <button type="button" data-testid="title-settings">Settings</button>
+        </div>
+        <span class="hint">or press Enter</span>
+      </section>
+      <section class="menu" data-testid="pause-overlay" hidden>
+        <h1>PAUSED</h1>
+        <div class="menu-buttons">
+          <button type="button" data-testid="resume">Resume</button>
+          <button type="button" data-testid="pause-settings">Settings</button>
+        </div>
+        <span class="hint">Esc to resume</span>
+      </section>
+      <section class="menu" data-testid="settings" hidden>
+        <h1>SETTINGS</h1>
+        <div class="settings-fields">
+          <label class="field">
+            <span>Volume</span>
+            <input type="range" min="0" max="100" step="5" data-testid="setting-volume" />
+            <output data-testid="setting-volume-value"></output>
+          </label>
+          <label class="field">
+            <input type="checkbox" data-testid="setting-reduced-motion" />
+            <span>Reduced motion</span>
+          </label>
+          <label class="field">
+            <input type="checkbox" data-testid="setting-colorblind" />
+            <span>Colorblind-safe colors</span>
+          </label>
+        </div>
+        <button type="button" data-testid="settings-back">Back</button>
+      </section>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
