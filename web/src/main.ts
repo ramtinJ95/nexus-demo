@@ -119,7 +119,7 @@ root.querySelector('[data-testid="restart"]')!.addEventListener("click", restart
 window.addEventListener("keydown", (e) => {
   sfx.resume();
   if (e.code === "KeyR" && !e.repeat && screen.kind === "playing" && !(e.target instanceof HTMLInputElement)) restart();
-  if (e.code === "Escape") act("escape");
+  if (e.code === "Escape" && !e.repeat) act("escape");
   const onTitle = screen.kind === "menu" && screen.menu === "title" && !screen.settings;
   // A focused button already acts on Enter; starting here too would swallow its click.
   if ((e.code === "Enter" || e.code === "NumpadEnter") && onTitle && !(e.target instanceof HTMLButtonElement)) act("start");

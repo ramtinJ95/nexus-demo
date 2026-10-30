@@ -70,8 +70,12 @@ export const titleSettings: Journey = {
     await fight(page, 1, async (i) => {
       if (i === 10) await shot("04-colorblind-play");
     });
-    await page.keyboard.press("Escape");
-    check((await attr("data-screen")) === "paused" && (await page.getByTestId("pause-overlay").isVisible()), "Escape pauses the run and shows the pause overlay");
+    for (let i = 0; i < 4; i++) {
+      await page.keyboard.down("Escape");
+      await page.waitForTimeout(40);
+    }
+    await page.keyboard.up("Escape");
+    check((await attr("data-screen")) === "paused" && (await page.getByTestId("pause-overlay").isVisible()), "holding Escape through key repeats pauses the run once and shows the pause overlay");
     const paused = await frozen();
     await page.waitForTimeout(1500);
     check((await frozen()) === paused, "score, integrity and the wave stay frozen while paused");

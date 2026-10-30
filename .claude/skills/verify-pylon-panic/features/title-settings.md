@@ -10,7 +10,7 @@ The game opens on a title screen with a glowing neon logo, a short how-to-play l
 - `settings-reduced-motion` turns reduced motion on or off. The default follows the OS preference. `?reducedMotion=1` forces it on and disables the checkbox.
 - `settings-colorblind` switches the arena and HUD to the Okabe-Ito colorblind-safe palette.
 - `settings-persist` keeps all three settings in the browser across reloads.
-- `pause` pauses a run on Escape, freezing the sim, the HUD, and the effects. Escape or Resume continues the run. Escape does nothing once the run is over.
+- `pause` pauses a run on Escape, freezing the sim, the HUD, and the effects. Escape or Resume continues the run. Key repeats from a held Escape are ignored. Escape does nothing once the run is over.
 - `pause-settings` opens the settings panel from the pause overlay. Escape closes the panel first and leaves the game paused.
 
 ## How to get to it (user POV)
@@ -32,7 +32,7 @@ Run `npm run verify -- run title-settings`. The journey does the following.
 - **Settings.** Click `title-settings`. `settings` is visible, `data-settings` is `true`, `data-volume` is `60`, `data-palette` is `neon`, and `data-reduced-motion` is `false`. Screenshot `02-settings`. Press ArrowLeft twice on `setting-volume`, then click `setting-colorblind` and `setting-reduced-motion`. `data-volume` is `50` and `setting-volume-value` reads `50%`, `data-palette` is `colorblind`, and `data-reduced-motion` is `true`.
 - **Persist.** Reload with `open("/", { title: true })` and click `title-settings`. The slider reads 50, both checkboxes are checked, and the root attributes match. Screenshot `03-settings-persisted`.
 - **Play.** Press Escape to close settings, then Enter. `data-screen` is `playing`. Fight until `hud-score` is above 0. This is where the GIF starts. Fight 1 more second. Screenshot `04-colorblind-play`.
-- **Pause.** Press Escape. `data-screen` is `paused` and `pause-overlay` is visible. After 1.5 seconds, score, integrity, countdown, and wave have not changed. Screenshot `05-paused`.
+- **Pause.** Hold Escape through three key repeats (Playwright sends each later `keyboard.down` with `repeat` set), then release. `data-screen` is `paused` and `pause-overlay` is visible. After 1.5 seconds, score, integrity, countdown, and wave have not changed. Screenshot `05-paused`.
 - **Resume.** Press Escape. `data-screen` is `playing` and `pause-overlay` is hidden. Fight until `hud-score` rises above its paused value, for at most 10 seconds, alternating a sweep 70 arena units around the pylon with the 200-unit one. The GIF ends here.
 
 ## Gotchas
