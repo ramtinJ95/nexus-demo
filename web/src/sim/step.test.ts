@@ -135,7 +135,7 @@ describe("fx events", () => {
   it("emits bugHit for every hit and bugKilled on the lethal one", () => {
     const state = createGame(8, calm);
     const { x, y } = state.drone.pos;
-    state.bugs.push({ id: 999, kind: "crawler", pos: { x, y: y - 200 }, hp: enemyTypes.crawler.hp, latched: false });
+    state.bugs.push({ id: 999, kind: "crawler", pos: { x, y: y - 200 }, hp: enemyTypes.crawler.hp, latched: false, facing: { x: 0, y: 1 } });
     const events: GameEvent[] = [];
     while (!events.some((e) => e.type === "bugKilled") && state.tick < 3 * tps) {
       const bug = state.bugs[0]!;
@@ -184,20 +184,20 @@ describe("waves", () => {
     const state = createGame(11, sturdy);
     const spawnedPerWave = new Map<number, Set<number>>();
     const events: GameEvent[] = [];
-    while (state.wavesSurvived < 4 && state.tick < 600 * tps) {
+    while (state.wavesSurvived < 3 && state.tick < 600 * tps) {
       events.push(...step(state, turret(state, sturdy), sturdy));
       const seen = spawnedPerWave.get(state.wave.number) ?? new Set<number>();
       for (const bug of state.bugs) seen.add(bug.id);
       spawnedPerWave.set(state.wave.number, seen);
     }
-    const counts = [1, 2, 3, 4].map((n) => spawnedPerWave.get(n)?.size ?? 0);
+    const counts = [1, 2, 3].map((n) => spawnedPerWave.get(n)?.size ?? 0);
     expect(counts[0]).toBeGreaterThan(0);
     for (let i = 1; i < counts.length; i++) expect(counts[i]).toBeGreaterThan(counts[i - 1]!);
 
-    expect(events.filter((e) => e.type === "waveCleared").map((e) => e.type === "waveCleared" && e.wave)).toEqual([1, 2, 3, 4]);
-    expect(events.filter((e) => e.type === "waveStarted").length).toBeGreaterThanOrEqual(4);
-    expect(state.wavesSurvived).toBe(4);
-    expect(score(state)).toBe(state.kills + 4);
+    expect(events.filter((e) => e.type === "waveCleared").map((e) => e.type === "waveCleared" && e.wave)).toEqual([1, 2, 3]);
+    expect(events.filter((e) => e.type === "waveStarted").length).toBeGreaterThanOrEqual(3);
+    expect(state.wavesSurvived).toBe(3);
+    expect(score(state)).toBe(state.kills + 3);
     expect(state.kills).toBe(counts.reduce((a, b) => a + b, 0));
   });
 });

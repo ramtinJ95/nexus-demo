@@ -1,7 +1,13 @@
 export type Settings = {
   arena: { width: number; height: number };
   ticksPerSecond: number;
-  drone: { speed: number; radius: number; fireCooldown: number };
+  drone: {
+    speed: number;
+    radius: number;
+    fireCooldown: number;
+    /** Knockback decay rate, per second. */
+    shoveDamping: number;
+  };
   bullet: { speed: number; ttl: number; radius: number; damage: number };
   pylon: { radius: number; maxIntegrity: number };
   waves: {
@@ -32,7 +38,7 @@ export type Settings = {
 export const defaultSettings: Settings = {
   arena: { width: 1280, height: 720 },
   ticksPerSecond: 60,
-  drone: { speed: 330, radius: 14, fireCooldown: 0.11 },
+  drone: { speed: 330, radius: 14, fireCooldown: 0.11, shoveDamping: 7 },
   bullet: { speed: 950, ttl: 1.2, radius: 4, damage: 1 },
   pylon: { radius: 34, maxIntegrity: 100 },
   waves: {

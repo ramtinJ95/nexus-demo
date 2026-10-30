@@ -1,9 +1,7 @@
-import { enemyTypes, type EnemyType } from "./enemies";
+import { debutKind, enemyKinds, enemyTypes, type EnemyType } from "./enemies";
 import { nextRandom } from "./rng";
 import type { Settings } from "./settings";
 import type { Bug, EnemyKind, GameEvent, GameState, InputFrame, Vec } from "./types";
-
-const enemyKinds = Object.keys(enemyTypes) as EnemyKind[];
 
 export function createGame(seed: number, settings: Settings): GameState {
   const { width, height } = settings.arena;
@@ -12,7 +10,7 @@ export function createGame(seed: number, settings: Settings): GameState {
     rng: seed >>> 0,
     tick: 0,
     phase: "playing",
-    drone: { pos: { x: width / 2, y: height / 2 + 110 }, aim: { x: 0, y: -1 }, cooldown: 0 },
+    drone: { pos: { x: width / 2, y: height / 2 + 110 }, aim: { x: 0, y: -1 }, cooldown: 0, shove: { x: 0, y: 0 } },
     integrity: settings.pylon.maxIntegrity,
     bugs: [],
     bullets: [],
@@ -73,8 +71,12 @@ export function step(state: GameState, input: InputFrame, settings: Settings): G
 function moveDrone(state: GameState, input: InputFrame, settings: Settings, dt: number): void {
   const { drone } = state;
   const r = settings.drone.radius;
-  drone.pos.x = clamp(drone.pos.x + input.move.x * settings.drone.speed * dt, r, settings.arena.width - r);
-  drone.pos.y = clamp(drone.pos.y + input.move.y * settings.drone.speed * dt, r, settings.arena.height - r);
+  const vx = input.move.x * settings.drone.speed + drone.shove.x;
+  const vy = input.move.y * settings.drone.speed + drone.shove.y;
+  drone.pos.x = clamp(drone.pos.x + vx * dt, r, settings.arena.width - r);
+  drone.pos.y = clamp(drone.pos.y + vy * dt, r, settings.arena.height - r);
+  const decay = Math.exp(-settings.drone.shoveDamping * dt);
+  drone.shove = { x: drone.shove.x * decay, y: drone.shove.y * decay };
   const dx = input.aim.x - drone.pos.x;
   const dy = input.aim.y - drone.pos.y;
   const len = Math.hypot(dx, dy);
@@ -108,50 +110,147 @@ function advanceWave(state: GameState, settings: Settings, dt: number, events: G
   }
   wave.nextSpawnIn -= dt;
   while (wave.remaining > 0 && wave.nextSpawnIn <= 0) {
-    state.bugs.push(spawnBug(state, wave.number, settings));
-    wave.remaining--;
+    const first = wave.remaining === bugsInWave(wave.number, settings);
+    const bug = spawnBug(state, wave.number, first, settings);
+    state.bugs.push(bug);
+    wave.remaining = Math.max(0, wave.remaining - bodies(bug.kind));
     wave.nextSpawnIn += spawnInterval(wave.number, settings);
   }
 }
 
-function spawnBug(state: GameState, wave: number, settings: Settings): Bug {
+function spawnBug(state: GameState, wave: number, first: boolean, settings: Settings): Bug {
   const { width, height } = settings.arena;
-  const eligible = enemyKinds.filter((k) => enemyTypes[k].firstWave <= wave);
-  const kind = eligible[Math.floor(nextRandom(state) * eligible.length)] ?? "crawler";
+  const roll = nextRandom(state);
+  const kind = (first && debutKind(wave)) || pickKind(roll, wave);
   let t = nextRandom(state) * 2 * (width + height);
   let pos: Vec;
   if (t < width) pos = { x: t, y: 0 };
   else if ((t -= width) < height) pos = { x: width, y: t };
   else if ((t -= height) < width) pos = { x: width - t, y: height };
   else pos = { x: 0, y: height - (t - width) };
-  return { id: state.nextId++, kind, pos, hp: enemyTypes[kind].hp, latched: false };
+  const facing = unit(pylonCenter(settings), pos);
+  const dash = enemyTypes[kind].dash;
+  return newBug(state, kind, pos, facing, dash ? dash.stalkSeconds * (0.5 + nextRandom(state)) : 0);
+}
+
+/** A wave's size counts every body a spawn will become, so splitters don't swell a wave past the next one. */
+function bodies(kind: EnemyKind): number {
+  const into = enemyTypes[kind].splitsInto;
+  return 1 + (into ? into.count * bodies(into.kind) : 0);
+}
+
+/** Picks by spawnWeight among the kinds whose first wave has arrived. */
+function pickKind(roll: number, wave: number): EnemyKind {
+  const eligible = enemyKinds.filter((k) => {
+    const firstWave = enemyTypes[k].firstWave;
+    return firstWave !== null && firstWave <= wave;
+  });
+  const total = eligible.reduce((sum, k) => sum + enemyTypes[k].spawnWeight, 0);
+  let pick = roll * total;
+  for (const k of eligible) {
+    pick -= enemyTypes[k].spawnWeight;
+    if (pick < 0) return k;
+  }
+  return eligible[eligible.length - 1] ?? "crawler";
+}
+
+function newBug(state: GameState, kind: EnemyKind, pos: Vec, facing: Vec, stalkLeft: number): Bug {
+  const body = { id: state.nextId++, pos, hp: enemyTypes[kind].hp, latched: false, facing };
+  if (kind === "dasher") return { ...body, kind, dash: { phase: "stalk", left: stalkLeft } };
+  return { ...body, kind };
 }
 
 function moveBugs(state: GameState, settings: Settings, dt: number, events: GameEvent[]): void {
-  const center = pylonCenter(settings);
   const speedScale = 1 + (state.wave.number - 1) * settings.waves.speedGrowthPerWave;
   for (const bug of state.bugs) {
     if (bug.latched) continue;
     const type: EnemyType = enemyTypes[bug.kind];
-    const dx = center.x - bug.pos.x;
-    const dy = center.y - bug.pos.y;
-    const dist = Math.hypot(dx, dy);
-    const reach = settings.pylon.radius + type.radius;
-    const travel = type.speed * speedScale * dt;
-    if (dist - travel <= reach) {
-      bug.pos = { x: center.x - (dx / dist) * reach, y: center.y - (dy / dist) * reach };
-      bug.latched = true;
-      events.push({ type: "pylonHit", integrity: state.integrity });
-    } else {
-      bug.pos.x += (dx / dist) * travel;
-      bug.pos.y += (dy / dist) * travel;
-    }
+    if (bug.kind === "dasher" && type.dash) moveDasher(state, bug, type, type.dash, speedScale, settings, dt, events);
+    else crawl(state, bug, type, speedScale, settings, dt, events);
   }
+}
+
+function crawl(state: GameState, bug: Bug, type: EnemyType, speedScale: number, settings: Settings, dt: number, events: GameEvent[]): void {
+  const center = pylonCenter(settings);
+  const dx = center.x - bug.pos.x;
+  const dy = center.y - bug.pos.y;
+  const dist = Math.hypot(dx, dy);
+  const reach = settings.pylon.radius + type.radius;
+  const travel = type.speed * speedScale * dt;
+  bug.facing = { x: dx / dist, y: dy / dist };
+  if (dist - travel <= reach) {
+    latch(state, bug, reach, settings, events);
+  } else {
+    bug.pos.x += (dx / dist) * travel;
+    bug.pos.y += (dy / dist) * travel;
+  }
+}
+
+function latch(state: GameState, bug: Bug, reach: number, settings: Settings, events: GameEvent[]): void {
+  const center = pylonCenter(settings);
+  const toBug = unit(bug.pos, center);
+  bug.pos = { x: center.x + toBug.x * reach, y: center.y + toBug.y * reach };
+  bug.latched = true;
+  events.push({ type: "pylonHit", integrity: state.integrity });
+}
+
+function moveDasher(
+  state: GameState,
+  bug: Extract<Bug, { kind: "dasher" }>,
+  type: EnemyType,
+  dash: NonNullable<EnemyType["dash"]>,
+  speedScale: number,
+  settings: Settings,
+  dt: number,
+  events: GameEvent[],
+): void {
+  const { drone } = state;
+  const d = bug.dash;
+  if (d.phase === "stalk") {
+    d.left = Math.max(0, d.left - dt);
+    const near = Math.hypot(drone.pos.x - bug.pos.x, drone.pos.y - bug.pos.y) <= dash.range;
+    if (d.left === 0 && near) {
+      bug.dash = { phase: "windup", left: dash.windupSeconds };
+      bug.facing = unit(drone.pos, bug.pos);
+    } else {
+      crawl(state, bug, type, speedScale, settings, dt, events);
+    }
+    return;
+  }
+  if (d.phase === "windup") {
+    bug.facing = unit(drone.pos, bug.pos);
+    d.left -= dt;
+    if (d.left <= 0) bug.dash = { phase: "lunge", left: dash.lungeSeconds, dir: { ...bug.facing } };
+    return;
+  }
+  const travel = dash.lungeSpeed * speedScale * dt;
+  const r = type.radius;
+  bug.facing = d.dir;
+  bug.pos = {
+    x: clamp(bug.pos.x + d.dir.x * travel, r, settings.arena.width - r),
+    y: clamp(bug.pos.y + d.dir.y * travel, r, settings.arena.height - r),
+  };
+  const center = pylonCenter(settings);
+  const reach = settings.pylon.radius + r;
+  if (Math.hypot(center.x - bug.pos.x, center.y - bug.pos.y) <= reach) {
+    latch(state, bug, reach, settings, events);
+    bug.dash = { phase: "stalk", left: dash.stalkSeconds };
+    return;
+  }
+  if (Math.hypot(drone.pos.x - bug.pos.x, drone.pos.y - bug.pos.y) <= settings.drone.radius + r) {
+    drone.shove = { x: d.dir.x * dash.shove, y: d.dir.y * dash.shove };
+    events.push({ type: "droneHit", pos: { ...drone.pos } });
+    bug.dash = { phase: "stalk", left: dash.stalkSeconds };
+    return;
+  }
+  d.left -= dt;
+  if (d.left <= 0) bug.dash = { phase: "stalk", left: dash.stalkSeconds };
 }
 
 function moveBullets(state: GameState, settings: Settings, dt: number, events: GameEvent[]): void {
   const { width, height } = settings.arena;
   const survivors = [];
+  const children: Bug[] = [];
   for (const bullet of state.bullets) {
     bullet.pos.x += bullet.vel.x * dt;
     bullet.pos.y += bullet.vel.y * dt;
@@ -166,21 +265,47 @@ function moveBullets(state: GameState, settings: Settings, dt: number, events: G
       survivors.push(bullet);
       continue;
     }
+    const type = enemyTypes[target.kind];
+    if (type.shield && bullet.vel.x * target.facing.x + bullet.vel.y * target.facing.y <= 0) {
+      events.push({ type: "shieldBlocked", pos: { ...bullet.pos } });
+      continue;
+    }
     target.hp -= settings.bullet.damage;
     events.push({ type: "bugHit", id: target.id, kind: target.kind, pos: { ...bullet.pos } });
     if (target.hp <= 0) {
       state.kills++;
       events.push({ type: "bugKilled", kind: target.kind, pos: { ...target.pos } });
+      if (type.splitsInto) children.push(...split(state, target, type.splitsInto));
     }
   }
   state.bullets = survivors;
-  state.bugs = state.bugs.filter((bug) => bug.hp > 0);
+  state.bugs = state.bugs.filter((bug) => bug.hp > 0).concat(children);
+}
+
+/** Children line up across the parent's facing, one radius plus a gap apart from the center. */
+function split(state: GameState, parent: Bug, into: NonNullable<EnemyType["splitsInto"]>): Bug[] {
+  const child = enemyTypes[into.kind];
+  const across = { x: -parent.facing.y, y: parent.facing.x };
+  const spacing = 2 * (child.radius + 2);
+  return Array.from({ length: into.count }, (_, i) => {
+    const offset = (i - (into.count - 1) / 2) * spacing;
+    const pos = { x: parent.pos.x + across.x * offset, y: parent.pos.y + across.y * offset };
+    return newBug(state, into.kind, pos, { ...parent.facing }, child.dash?.stalkSeconds ?? 0);
+  });
 }
 
 function drainPylon(state: GameState, dt: number): void {
   for (const bug of state.bugs) {
     if (bug.latched) state.integrity -= enemyTypes[bug.kind].drainPerSecond * dt;
   }
+}
+
+/** Unit vector pointing from `from` to `to`. Coincident points face up. */
+function unit(to: Vec, from: Vec): Vec {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy);
+  return len > 1e-9 ? { x: dx / len, y: dy / len } : { x: 0, y: -1 };
 }
 
 function clamp(v: number, lo: number, hi: number): number {

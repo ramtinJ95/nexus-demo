@@ -34,6 +34,8 @@ export function createEffects(seed: number): Effects {
   };
 }
 
+const SHIELD_SPARK = "#bfe6ff";
+
 export function applyEvent(fx: Effects, event: GameEvent, settings: Settings): void {
   const motion = !settings.fx.reducedMotion;
   switch (event.type) {
@@ -43,6 +45,9 @@ export function applyEvent(fx: Effects, event: GameEvent, settings: Settings): v
       break;
     case "bugKilled":
       burst(fx, event.pos, enemyTypes[event.kind].color, settings.fx.particles.perDeath, 1.4, settings);
+      break;
+    case "shieldBlocked":
+      burst(fx, event.pos, SHIELD_SPARK, settings.fx.particles.perHit, 0.8, settings);
       break;
     case "shotFired":
       if (motion) fx.muzzleFlash = settings.fx.muzzleFlashSeconds;
