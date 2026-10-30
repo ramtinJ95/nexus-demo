@@ -9,6 +9,9 @@ export type GameEventHandler<T extends GameEventType> = (event: GameEventOf<T>) 
 export type Game = {
   readonly state: GameState;
   readonly settings: Settings;
+  /** A paused game neither steps nor banks time, but still calls `onFrame` so the frozen arena renders. */
+  readonly paused: boolean;
+  setPaused(paused: boolean): void;
   /** Subscribes to one event type. Returns an unsubscribe function. */
   on<T extends GameEventType>(type: T, handler: GameEventHandler<T>): () => void;
   restart(): void;
@@ -20,12 +23,13 @@ export type GameOptions = {
   settings: Settings;
   readInput: () => InputFrame;
   onFrame: (state: GameState, now: number) => void;
+  paused?: boolean;
 };
 
 /** A hidden tab resumes with one long frame. Capping it keeps catch-up to a handful of ticks instead of a spiral. */
 const MAX_FRAME_SECONDS = 0.25;
 
-export function startGame({ seed, settings, readInput, onFrame }: GameOptions): Game {
+export function startGame({ seed, settings, readInput, onFrame, paused = false }: GameOptions): Game {
   const dt = 1 / settings.ticksPerSecond;
   const handlers = new Map<GameEventType, Set<(event: GameEvent) => void>>();
   let state = createGame(seed, settings);
@@ -38,9 +42,9 @@ export function startGame({ seed, settings, readInput, onFrame }: GameOptions): 
   }
 
   function frame(now: number): void {
-    accumulator += Math.min((now - last) / 1000, MAX_FRAME_SECONDS);
+    if (!paused) accumulator += Math.min((now - last) / 1000, MAX_FRAME_SECONDS);
     last = now;
-    while (accumulator >= dt) {
+    while (!paused && accumulator >= dt) {
       accumulator -= dt;
       for (const event of step(state, readInput(), settings)) dispatch(event);
     }
@@ -53,6 +57,12 @@ export function startGame({ seed, settings, readInput, onFrame }: GameOptions): 
       return state;
     },
     settings,
+    get paused() {
+      return paused;
+    },
+    setPaused(next) {
+      paused = next;
+    },
     on(type, handler) {
       const set = handlers.get(type) ?? new Set();
       handlers.set(type, set);
