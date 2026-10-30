@@ -1,0 +1,119 @@
+{
+  "journey": "leaderboard",
+  "feature": "leaderboard.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:46541/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "seeded RIVAL-1 with 40",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-2 with 26",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-3 with 17",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-4 with 11",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-5 with 7",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-6 with 4",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-7 with 2",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-8 with 1",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-9 with 0",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-10 with 0",
+      "ok": true
+    },
+    {
+      "claim": "seeded RIVAL-11 with 0",
+      "ok": true
+    },
+    {
+      "claim": "the fight scores, so the run beats the zero-score rivals",
+      "ok": true
+    },
+    {
+      "claim": "game over asks for a name",
+      "ok": true
+    },
+    {
+      "claim": "W, A, R, D and S type into the name field instead of moving or restarting",
+      "ok": true
+    },
+    {
+      "claim": "typing R in the name field does not restart the run",
+      "ok": true
+    },
+    {
+      "claim": "exactly one row is highlighted, with the player's name and final score",
+      "ok": true
+    },
+    {
+      "claim": "the player's row is inside the top 10, which pushed the last rival off",
+      "ok": true
+    },
+    {
+      "claim": "the top rows are ranked 1 to 10 in order",
+      "ok": true
+    },
+    {
+      "claim": "GET /api/scores lists the submitted run",
+      "ok": true
+    },
+    {
+      "claim": "R after submitting restarts the run and hides the board",
+      "ok": true
+    },
+    {
+      "claim": "the next game over remembers the last name",
+      "ok": true
+    },
+    {
+      "claim": "with the API down, the panel shows a visible offline notice",
+      "ok": true
+    },
+    {
+      "claim": "the offline panel keeps the form so the player can retry",
+      "ok": true
+    },
+    {
+      "claim": "restart still works with the API down",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-firefight.png",
+    "02-name-entered.png",
+    "03-board.png",
+    "04-api-down.png",
+    "board.json",
+    "leaderboard.gif",
+    "leaderboard.mp4",
+    "leaderboard.webm",
+    "scores.json"
+  ],
+  "capturedAt": "2026-10-30T10:32:13.189Z"
+}

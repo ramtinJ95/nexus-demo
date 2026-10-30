@@ -1,0 +1,92 @@
+[
+  {
+    "mine": false,
+    "cells": [
+      "#1",
+      "RIVAL-1",
+      "40",
+      "W6"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#2",
+      "RIVAL-2",
+      "26",
+      "W4"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#3",
+      "RIVAL-3",
+      "17",
+      "W3"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#4",
+      "RIVAL-4",
+      "11",
+      "W2"
+    ]
+  },
+  {
+    "mine": true,
+    "cells": [
+      "#5",
+      "WARDS",
+      "7",
+      "W2"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#6",
+      "RIVAL-5",
+      "7",
+      "W1"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#7",
+      "RIVAL-6",
+      "4",
+      "W1"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#8",
+      "RIVAL-7",
+      "2",
+      "W1"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#9",
+      "RIVAL-8",
+      "1",
+      "W1"
+    ]
+  },
+  {
+    "mine": false,
+    "cells": [
+      "#10",
+      "RIVAL-9",
+      "0",
+      "W1"
+    ]
+  }
+]
