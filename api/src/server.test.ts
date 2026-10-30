@@ -89,6 +89,29 @@ describe("api", () => {
     );
   });
 
+  test("posted score answers its rank among the scores stored so far", async () => {
+    const ranks: Record<string, number> = {};
+    for (const entry of [
+      { name: "mid", score: 50, wave: 2 },
+      { name: "top", score: 90, wave: 1 },
+      { name: "tie", score: 50, wave: 2 },
+      { name: "deeper", score: 50, wave: 5 },
+      { name: "low", score: 10, wave: 9 },
+    ]) {
+      ranks[entry.name] = (await json(await post(entry))).rank;
+    }
+    const { scores } = await json(await fetch(`${base}/api/scores`));
+    assert.deepEqual(scores.map((s: { name: string }) => s.name), ["top", "deeper", "mid", "tie", "low"]);
+    assert.deepEqual(ranks, { mid: 1, top: 1, tie: 3, deeper: 2, low: 5 });
+  });
+
+  test("rank counts scores beyond the default list", async () => {
+    for (let i = 0; i < 12; i++) await post({ name: `p${i}`, score: 100 + i, wave: 1 });
+    const res = await json(await post({ name: "late", score: 1, wave: 1 }));
+    assert.equal(res.rank, 13);
+    assert.ok(!(await json(await fetch(`${base}/api/scores`))).scores.some((s: { id: number }) => s.id === res.score.id));
+  });
+
   test("limit defaults to 10 and caps the list", async () => {
     for (let i = 0; i < 12; i++) await post({ name: `p${i}`, score: i, wave: 1 });
     assert.equal((await json(await fetch(`${base}/api/scores`))).scores.length, 10);

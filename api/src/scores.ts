@@ -18,6 +18,8 @@ export type ParseResult =
 export type ScoreStore = {
   insert(entry: ScoreEntry): StoredScore;
   top(limit: number): StoredScore[];
+  /** 1-based position of a stored score in the `top` order. */
+  rank(stored: StoredScore): number;
   ping(): void;
   close(): void;
 };
@@ -80,6 +82,13 @@ export function openScoreStore(path: string): ScoreStore {
   const topStmt = db.prepare(
     "SELECT * FROM scores ORDER BY score DESC, wave DESC, created_at ASC, id ASC LIMIT ?",
   );
+  const rankStmt = db.prepare(`
+    SELECT COUNT(*) + 1 AS rank FROM scores
+    WHERE score > :score
+      OR (score = :score AND wave > :wave)
+      OR (score = :score AND wave = :wave AND created_at < :createdAt)
+      OR (score = :score AND wave = :wave AND created_at = :createdAt AND id < :id)
+  `);
   const pingStmt = db.prepare("SELECT 1");
 
   return {
@@ -89,6 +98,9 @@ export function openScoreStore(path: string): ScoreStore {
     },
     top(limit) {
       return (topStmt.all(limit) as Row[]).map(toStored);
+    },
+    rank({ id, score, wave, createdAt }) {
+      return (rankStmt.get({ id, score, wave, createdAt }) as { rank: number }).rank;
     },
     ping() {
       pingStmt.get();
