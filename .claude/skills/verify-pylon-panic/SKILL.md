@@ -64,6 +64,8 @@ Read the game through these stable handles:
 | `[data-testid="leaderboard-name"]` and `[data-testid="leaderboard-submit"]` | the name field and its submit button |
 | `[data-testid="leaderboard-notice"]` | the offline notice, or the API's message for a rejected name |
 | `[data-testid="leaderboard-row"]` with `data-mine` | one board row. `data-mine="true"` marks the player's |
+| `[data-testid="game"]` with `data-reduced-motion` | `true` when reduced motion is on |
+| `[data-testid="game"]` with `data-shake` | `true` while the screen shakes |
 
 A new feature adds its own `data-testid` handles, adds a row here, and adds a feature file under `features/`.
 
