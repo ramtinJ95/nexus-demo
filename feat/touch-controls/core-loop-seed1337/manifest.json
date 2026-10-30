@@ -1,0 +1,53 @@
+{
+  "journey": "core-loop",
+  "feature": "core-loop.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:38225/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "a fresh page starts in the playing phase",
+      "ok": true
+    },
+    {
+      "claim": "the run starts on wave 1",
+      "ok": true
+    },
+    {
+      "claim": "the run starts with score 0",
+      "ok": true
+    },
+    {
+      "claim": "shooting with the mouse kills bugs and raises the score",
+      "ok": true
+    },
+    {
+      "claim": "the run ends when pylon integrity reaches 0",
+      "ok": true
+    },
+    {
+      "claim": "the game over panel is shown",
+      "ok": true
+    },
+    {
+      "claim": "R restarts the run with score 0",
+      "ok": true
+    },
+    {
+      "claim": "R restarts the run on wave 1",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-start.png",
+    "02-firefight.png",
+    "03-game-over.png",
+    "04-restarted.png",
+    "core-loop.gif",
+    "core-loop.mp4",
+    "core-loop.webm"
+  ],
+  "capturedAt": "2026-10-30T12:48:34.802Z"
+}
