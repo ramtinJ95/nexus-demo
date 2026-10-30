@@ -59,6 +59,13 @@ export function applyEvent(fx: Effects, event: GameEvent, settings: Settings): v
       fx.pylonPulse = settings.fx.pylonPulseSeconds;
       if (motion) fx.trauma = Math.min(1, fx.trauma + settings.fx.shake.kick);
       break;
+    case "bossSpawned":
+      if (motion) fx.trauma = Math.min(1, fx.trauma + settings.fx.shake.kick);
+      break;
+    case "bossEnraged":
+      burst(fx, event.pos, "boss", settings.fx.particles.perDeath * 3, 2.2, settings);
+      if (motion) fx.trauma = 1;
+      break;
   }
 }
 

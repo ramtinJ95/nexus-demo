@@ -117,6 +117,75 @@ body {
   opacity: 0.8;
 }
 
+.boss-hud {
+  position: absolute;
+  top: 86px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.boss-hud[hidden] {
+  display: none;
+}
+
+.boss-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #fff;
+  text-shadow: 0 0 10px var(--boss);
+}
+
+.boss-track {
+  width: min(360px, 70vw);
+  height: 10px;
+  background: color-mix(in srgb, var(--boss) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--boss) 60%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--boss) 45%, transparent);
+}
+
+.boss-bar {
+  height: 100%;
+  background: var(--boss);
+  box-shadow: 0 0 12px var(--boss);
+  transition: width 0.12s linear;
+}
+
+.boss-hud[data-phase="2"] .boss-name {
+  color: #fff0c8;
+}
+
+.boss-hud[data-phase="2"] .boss-bar {
+  background: linear-gradient(90deg, var(--boss), #ffb02e);
+  animation: boss-enraged 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes boss-enraged {
+  from {
+    box-shadow: 0 0 8px var(--boss);
+  }
+  to {
+    box-shadow: 0 0 22px #ffb02e;
+  }
+}
+
+.game[data-reduced-motion="true"] .boss-hud .boss-bar {
+  animation: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boss-hud .boss-bar {
+    animation: none;
+    transition: none;
+  }
+}
+
 .seed {
   margin-left: auto;
   text-align: right;
