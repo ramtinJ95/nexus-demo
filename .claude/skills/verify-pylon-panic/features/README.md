@@ -35,6 +35,7 @@ Each feature file starts with an H1 title and one paragraph on what the player s
 | [Enemy variety](./enemy-variety.md) | `enemy-dasher`, `enemy-splitter`, `enemy-shielded` | wave debuts, dasher lunge, splitter split, shielded bug hit from behind, mixed waves |
 | [Game feel](./game-feel.md) | `game-feel` | hit sparks, death bursts, hit flash, muzzle flash, screen shake and pylon glow pulse on damage, reduced motion |
 | [Title and settings](./title-settings.md) | `title-settings` | title screen and logo, how to play, settings panel (music and effects volumes, reduced motion, colorblind palette) kept across reloads, pause and resume on Escape |
+| [Music and audio](./music-audio.md) | `music-audio` | audio silent until the first input, wave music that rises with the wave and stops on pause, title and game over, event sounds, separate music and effects volumes |
 | [Leaderboard](./leaderboard.md) | `leaderboard` | name entry on game over, submitting, the top 10 with the player's row highlighted, the API-down notice |
 | [Daily challenge](./daily.md) | `daily` | the Daily button, a seed from the UTC date shared by every player that day, the DAILY HUD tag, restart keeps the daily seed, the per-day board |
 | [Leaderboard API](./leaderboard-api.md) | `leaderboard-api` | health, listing, submitting, and validating scores |

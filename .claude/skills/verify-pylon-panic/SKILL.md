@@ -70,6 +70,8 @@ Read the game through these stable handles:
 | `[data-testid="game"]` with `data-settings` | `true` while the settings panel is open |
 | `[data-testid="game"]` with `data-palette` | `neon` or `colorblind` |
 | `[data-testid="game"]` with `data-music-volume` and `data-sfx-volume` | music and effects volumes as whole percents |
+| `[data-testid="game"]` with `data-audio` | `locked` before the first input, `running` once the browser plays sound, or `unavailable` |
+| `[data-testid="game"]` with `data-music` | `off`, or the music level from `1` while a run is in play |
 | `[data-testid="title-screen"]` | the title screen, with `title-logo` (the logo canvas) and `how-to-play` |
 | `[data-testid="start"]` | starts the run. Enter also starts it from the title screen |
 | `[data-testid="title-settings"]`, `[data-testid="pause-settings"]` | open the settings panel from the title screen or the pause overlay |
