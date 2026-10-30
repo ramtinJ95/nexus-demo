@@ -47,15 +47,23 @@ export const gameFeel: Journey = {
     check((await root.getAttribute("data-reduced-motion")) === "false", "full motion is on when the player has no reduced-motion preference");
     await watchShake(page);
     await page.waitForTimeout(2500);
+    let hitShot = false;
+    const shootFirstShake = async () => {
+      if (hitShot || !(await page.evaluate(() => window.shakeSeen === true))) return;
+      hitShot = true;
+      await shot("02-pylon-hit-shake-pulse");
+    };
     clip.start();
     await fight(page, 7, async (i) => {
       if (i === 70) await shot("01-firefight-particles-flashes");
+      await shootFirstShake();
     });
-    check(number(await hud("hud-score")) > 0, "bullets hit and kill bugs during the firefight");
-
-    await page.locator('[data-testid="game"][data-shake="true"]').waitFor({ timeout: 60_000 });
-    await shot("02-pylon-hit-shake-pulse");
     clip.stop();
+    check(number(await hud("hud-score")) > 0, "bullets hit and kill bugs during the firefight");
+    if (!hitShot) {
+      await page.locator('[data-testid="game"][data-shake="true"]').waitFor({ timeout: 60_000 });
+      await shootFirstShake();
+    }
     check(number(await hud("hud-integrity")) < 100, "a latched bug damages the pylon");
     check(await page.evaluate(() => window.shakeSeen === true), "pylon damage shakes the screen");
 
@@ -64,14 +72,23 @@ export const gameFeel: Journey = {
     check((await root.getAttribute("data-reduced-motion")) === "true", "the OS reduced-motion preference turns reduced motion on");
     await watchShake(page);
     await page.waitForTimeout(2500);
-    await fight(page, 4, async (i) => {
+    let reducedHitShot = false;
+    const shootFirstDamage = async () => {
+      if (reducedHitShot || number(await hud("hud-integrity")) >= 100) return;
+      reducedHitShot = true;
+      await shot("04-reduced-motion-pylon-hit");
+    };
+    await fight(page, 7, async (i) => {
       if (i === 50) await shot("03-reduced-motion-firefight");
+      await shootFirstDamage();
     });
-    await page.waitForFunction(() => {
-      const text = document.querySelector('[data-testid="hud-integrity"]')?.textContent ?? "100";
-      return Number(text) < 100;
-    }, undefined, { timeout: 60_000 });
-    await shot("04-reduced-motion-pylon-hit");
+    if (!reducedHitShot) {
+      await page.waitForFunction(() => {
+        const text = document.querySelector('[data-testid="hud-integrity"]')?.textContent ?? "100";
+        return Number(text) < 100;
+      }, undefined, { timeout: 60_000 });
+      await shootFirstDamage();
+    }
     await page.waitForTimeout(1000);
     check(await page.evaluate(() => window.shakeSeen === false), "with reduced motion, pylon damage does not shake the screen");
   },
