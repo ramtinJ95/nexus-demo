@@ -2,7 +2,7 @@
   "journey": "boss",
   "feature": "boss.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:44863/?seed=1337",
+  "url": "http://127.0.0.1:41397/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -67,5 +67,5 @@
     "boss.mp4",
     "boss.webm"
   ],
-  "capturedAt": "2026-10-30T13:39:33.648Z"
+  "capturedAt": "2026-10-30T13:50:30.090Z"
 }
