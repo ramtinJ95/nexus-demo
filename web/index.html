@@ -33,6 +33,14 @@
         <h1>PYLON DOWN</h1>
         <p>Score <strong data-testid="final-score">0</strong></p>
         <p>Wave <strong data-testid="final-wave">1</strong></p>
+        <section class="leaderboard" data-testid="leaderboard" data-state="hidden">
+          <form data-testid="leaderboard-form">
+            <input data-testid="leaderboard-name" aria-label="Your name" placeholder="Your name" maxlength="16" autocomplete="off" spellcheck="false" required />
+            <button type="submit" data-testid="leaderboard-submit">Submit score</button>
+          </form>
+          <p class="notice" data-testid="leaderboard-notice" role="status"></p>
+          <ol data-testid="leaderboard-board" hidden></ol>
+        </section>
         <button type="button" data-testid="restart">Restart</button>
         <span class="hint">or press R</span>
       </section>

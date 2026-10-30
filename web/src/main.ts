@@ -2,6 +2,7 @@ import "./style.css";
 import { startGame } from "./game";
 import { createHud } from "./hud";
 import { createInput } from "./input";
+import { createLeaderboardPanel } from "./leaderboard-panel";
 import { createRenderer } from "./render/draw";
 import { seedFromString } from "./sim/rng";
 import { defaultSettings } from "./sim/settings";
@@ -33,7 +34,15 @@ const game = startGame({
   },
 });
 
-root.querySelector('[data-testid="restart"]')!.addEventListener("click", () => game.restart());
+const leaderboard = createLeaderboardPanel(root.querySelector('[data-testid="leaderboard"]')!);
+game.on("gameOver", ({ score, wave }) => leaderboard.show({ score, wave }));
+
+function restart(): void {
+  game.restart();
+  leaderboard.reset();
+}
+
+root.querySelector('[data-testid="restart"]')!.addEventListener("click", restart);
 window.addEventListener("keydown", (e) => {
-  if (e.code === "KeyR" && !e.repeat) game.restart();
+  if (e.code === "KeyR" && !e.repeat && !(e.target instanceof HTMLInputElement)) restart();
 });

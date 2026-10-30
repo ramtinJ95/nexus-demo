@@ -1,12 +1,12 @@
 # Leaderboard API
 
-The API stores run scores and lists the best ones. The game reaches it on its own origin under `/api`, through the Vite proxy. There is no leaderboard UI yet, so the player-facing proof is the HTTP behavior a future leaderboard screen will use.
+The API stores run scores and lists the best ones. The game reaches it on its own origin under `/api`, through the Vite proxy. The [leaderboard](./leaderboard.md) on the game over panel uses it. This file proves the HTTP behavior on its own.
 
 ## Sub-features
 
 - `api-health` answers `GET /api/health` with 200 `{ "ok": true }` once the database answers.
 - `api-list` answers `GET /api/scores?limit=N` with `{ "scores": [...] }`, best score first. `limit` defaults to 10 and must be 1 to 100.
-- `api-submit` stores `POST /api/scores` with `{ name, score, wave }` and answers 201 with the stored row.
+- `api-submit` stores `POST /api/scores` with `{ name, score, wave }` and answers 201 with `{ score, rank }`, the stored row and its 1-based place in the listed order among the scores stored so far.
 - `api-validate` rejects with 400 a name that is empty or over 16 characters after trimming, a score that is not an integer from 0 to 1,000,000, and a wave that is not an integer from 1 to 10,000.
 
 ## How to get to it (user POV)

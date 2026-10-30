@@ -32,4 +32,5 @@ Each feature file starts with an H1 title and one paragraph on what the player s
 | Feature | Journey | Covers |
 | --- | --- | --- |
 | [Core loop](./core-loop.md) | `core-loop` | moving, aiming, shooting, waves, HUD, pylon drain, game over, restart |
+| [Leaderboard](./leaderboard.md) | `leaderboard` | name entry on game over, submitting, the top 10 with the player's row highlighted, the API-down notice |
 | [Leaderboard API](./leaderboard-api.md) | `leaderboard-api` | health, listing, submitting, and validating scores |

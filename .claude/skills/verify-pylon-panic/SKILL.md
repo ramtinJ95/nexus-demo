@@ -44,7 +44,8 @@ A journey is one file in `scripts/journeys/` that exports a `Journey` (see `scri
 - `page`, a Playwright page at 1280x720, recording video;
 - `open(path)`, which loads the web app with `?seed=` set and waits for `[data-testid="game"]`;
 - `shot(name)`, `save(name, data)`, and `check(ok, claim)` for evidence and assertions;
-- `clip.start()` and `clip.stop()`, which mark the stretch that becomes the GIF.
+- `clip.start()` and `clip.stop()`, which mark the stretch that becomes the GIF;
+- `allowConsoleError(pattern)`, which stops one console error from failing the run. Call it only after the journey causes that error on purpose, as `leaderboard` does when it stops the API.
 
 Drive the game only through real input. Use `page.keyboard.down("KeyW")` and `page.keyboard.up("KeyW")` to move, `page.mouse.move(x, y)` to aim, and `page.mouse.down()` and `page.mouse.up()` to fire. Map arena coordinates (1280x720) to the page through the canvas bounding box, as `journeys/core-loop.ts` does. Never call game internals, never set state from the page, and never add a test-only endpoint to reach a state. If a state is slow to reach by playing, choose a seed that reaches it sooner.
 
@@ -59,6 +60,10 @@ Read the game through these stable handles:
 | `[data-testid="hud-seed"]` | the seed of this run |
 | `[data-testid="game-over"]` | the game over panel |
 | `[data-testid="restart"]` | restart button. `R` also restarts |
+| `[data-testid="leaderboard"]` with `data-state` | `hidden`, `naming`, `submitting`, `offline`, or `board` |
+| `[data-testid="leaderboard-name"]` and `[data-testid="leaderboard-submit"]` | the name field and its submit button |
+| `[data-testid="leaderboard-notice"]` | the offline notice, or the API's message for a rejected name |
+| `[data-testid="leaderboard-row"]` with `data-mine` | one board row. `data-mine="true"` marks the player's |
 
 A new feature adds its own `data-testid` handles, adds a row here, and adds a feature file under `features/`.
 
