@@ -18,9 +18,14 @@ export type JourneyContext = {
   clip: { start(): void; stop(): void };
 };
 
+/** The browser to drive. A `touch` device is a phone: it reports touch support and a coarse pointer. */
+export type Device = { width: number; height: number; touch?: boolean };
+
 export type Journey = {
   /** The feature map file this journey proves, relative to `features/`. */
   feature: string;
   description: string;
+  /** Defaults to a 1280x720 desktop with a mouse. */
+  device?: Device;
   run(ctx: JourneyContext): Promise<void>;
 };

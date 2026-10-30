@@ -1,4 +1,5 @@
 import "./style.css";
+import "./touch.css";
 import { startGame } from "./game";
 import { createEffects, frameEffects } from "./fx/effects";
 import { createHud } from "./hud";
@@ -34,7 +35,7 @@ const seed = resolveSeed();
 const reducedMotion = resolveReducedMotion();
 const settings = { ...defaultSettings, fx: { ...defaultSettings.fx, reducedMotion } };
 const renderer = createRenderer(canvas, settings);
-const input = createInput(canvas, renderer.viewport);
+const input = createInput(root, canvas, renderer.viewport);
 const hud = createHud(root, settings);
 
 let fx = createEffects(seed);
@@ -46,7 +47,7 @@ root.dataset.shake = "false";
 const game = startGame({
   seed,
   settings,
-  readInput: input.read,
+  readInput: () => input.read(game.state.drone.pos),
   onFrame(state, now) {
     frameEffects(fx, fxEvents, Math.min(Math.max(0, (now - (lastFrame ?? now)) / 1000), MAX_FX_SECONDS), settings);
     fxEvents = [];

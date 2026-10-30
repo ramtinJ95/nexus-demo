@@ -41,13 +41,13 @@ Run it first whenever something looks off. If Chromium or ffmpeg is missing, rer
 
 A journey is one file in `scripts/journeys/` that exports a `Journey` (see `scripts/journey.ts`), registered by name in `scripts/journeys/index.ts`. The harness gives it:
 
-- `page`, a Playwright page at 1280x720, recording video;
+- `page`, a Playwright page recording video, at 1280x720 with a mouse unless the journey sets `device: { width, height, touch: true }`;
 - `open(path)`, which loads the web app with `?seed=` set and waits for `[data-testid="game"]`;
 - `shot(name)`, `save(name, data)`, and `check(ok, claim)` for evidence and assertions;
 - `clip.start()` and `clip.stop()`, which mark the stretch that becomes the GIF;
 - `allowConsoleError(pattern)`, which stops one console error from failing the run. Call it only after the journey causes that error on purpose, as `leaderboard` does when it stops the API.
 
-Drive the game only through real input. Use `page.keyboard.down("KeyW")` and `page.keyboard.up("KeyW")` to move, `page.mouse.move(x, y)` to aim, and `page.mouse.down()` and `page.mouse.up()` to fire. Map arena coordinates (1280x720) to the page through the canvas bounding box, as `journeys/core-loop.ts` does. Never call game internals, never set state from the page, and never add a test-only endpoint to reach a state. If a state is slow to reach by playing, choose a seed that reaches it sooner.
+Drive the game only through real input. On a touch device, put fingers down with `touchscreen(page)` from `scripts/touch.ts`, as `journeys/touch-controls.ts` does. Use `page.keyboard.down("KeyW")` and `page.keyboard.up("KeyW")` to move, `page.mouse.move(x, y)` to aim, and `page.mouse.down()` and `page.mouse.up()` to fire. Map arena coordinates (1280x720) to the page through the canvas bounding box, as `journeys/core-loop.ts` does. Never call game internals, never set state from the page, and never add a test-only endpoint to reach a state. If a state is slow to reach by playing, choose a seed that reaches it sooner.
 
 Read the game through these stable handles:
 
@@ -68,6 +68,8 @@ Read the game through these stable handles:
 | `[data-testid="game"]` with `data-shake` | `true` while the screen shakes |
 | `[data-testid="game"]` with `data-enemy-kinds` | the enemy kinds on the field now, sorted and space-separated |
 | `[data-testid="hud-new-enemy"]` with `data-kind` | the banner for a kind that debuts this wave |
+| `[data-testid="game"]` with `data-touch` | `true` when the virtual sticks are shown |
+| `[data-testid="touch-stick-move"]` and `[data-testid="touch-stick-aim"]` with `data-active` | the two virtual sticks. `true` while a thumb holds it |
 
 A new feature adds its own `data-testid` handles, adds a row here, and adds a feature file under `features/`.
 
