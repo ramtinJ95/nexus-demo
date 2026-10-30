@@ -1,0 +1,47 @@
+{
+  "journey": "leaderboard-api",
+  "feature": "leaderboard-api.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:45743/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "GET /api/health answers 200 through the web proxy",
+      "ok": true
+    },
+    {
+      "claim": "a clean stack starts with no scores",
+      "ok": true
+    },
+    {
+      "claim": "a valid score is stored with its name trimmed",
+      "ok": true
+    },
+    {
+      "claim": "a 17 character name is rejected",
+      "ok": true
+    },
+    {
+      "claim": "a negative score is rejected",
+      "ok": true
+    },
+    {
+      "claim": "GET /api/scores lists stored scores, best first",
+      "ok": true
+    },
+    {
+      "claim": "limit=0 is rejected",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "leaderboard-api.mp4",
+    "leaderboard-api.webm",
+    "posts.json",
+    "scores-json.png",
+    "scores.json"
+  ],
+  "capturedAt": "2026-10-30T10:07:09.043Z"
+}

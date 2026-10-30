@@ -1,0 +1,18 @@
+{
+  "scores": [
+    {
+      "id": 2,
+      "name": "Grace",
+      "score": 99,
+      "wave": 7,
+      "createdAt": "2026-10-30T10:07:08.440Z"
+    },
+    {
+      "id": 1,
+      "name": "Ada",
+      "score": 42,
+      "wave": 5,
+      "createdAt": "2026-10-30T10:07:08.432Z"
+    }
+  ]
+}
