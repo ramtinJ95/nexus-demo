@@ -1,0 +1,72 @@
+{
+  "journey": "touch-portrait",
+  "feature": "touch-controls.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:40491/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "a touch device shows the virtual sticks",
+      "ok": true
+    },
+    {
+      "claim": "both sticks rest on screen before a touch",
+      "ok": true
+    },
+    {
+      "claim": "the HUD fits the screen width",
+      "ok": true
+    },
+    {
+      "claim": "in portrait the arena sits below the HUD",
+      "ok": true
+    },
+    {
+      "claim": "the arena fits the screen",
+      "ok": true
+    },
+    {
+      "claim": "the left thumb takes the move stick",
+      "ok": true
+    },
+    {
+      "claim": "the right thumb takes the aim stick",
+      "ok": true
+    },
+    {
+      "claim": "holding the aim stick fires on its own and kills bugs",
+      "ok": true
+    },
+    {
+      "claim": "lifting the right thumb releases the aim stick",
+      "ok": true
+    },
+    {
+      "claim": "the drone stops firing once the aim thumb lifts",
+      "ok": true
+    },
+    {
+      "claim": "the sticks hide on the game over panel",
+      "ok": true
+    },
+    {
+      "claim": "the restart button is reachable on the game over panel",
+      "ok": true
+    },
+    {
+      "claim": "tapping restart starts a new run",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-portrait-start.png",
+    "02-portrait-firefight.png",
+    "03-portrait-game-over.png",
+    "touch-portrait.gif",
+    "touch-portrait.mp4",
+    "touch-portrait.webm"
+  ],
+  "capturedAt": "2026-10-30T12:47:03.943Z"
+}
