@@ -34,7 +34,7 @@ Run `npm run verify -- run boss`. The journey plays waves 1 to 5 like the enemy-
 
 ## Gotchas
 
-- The blind patrol does not always survive wave 5. With seed 7 the pylon fell to wave 5's regular bugs before the boss arrived, so the run fails on `the drone holds the pylon through wave 5's regular bugs`. With seed 1337 it reaches the boss and wins. Pick another seed if a run dies before the boss, and never report that run as a boss check.
+- The blind patrol does not always survive wave 5. Seed 1337 reached and beat the boss in three of four runs, and the fourth fell to wave 5's regular bugs. Seeds 7 and 42 fell there too. Such a run fails on `the drone holds the pylon through wave 5's regular bugs` and says nothing about the boss. Rerun it, and never report it as a boss check.
 - The journey plays about two minutes before the boss arrives, because it must clear waves 1 to 5 first.
 - The GIF is capped at 8 seconds. A fight longer than that is cut, so the MP4 is the full record. `boss-fight.json` says how long the fight took.
 - The journey reads the boss's position from `hud-boss` instead of the canvas. That is what the player's eyes give them. It never sets state.
