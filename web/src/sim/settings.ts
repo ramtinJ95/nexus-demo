@@ -20,6 +20,8 @@ export type Settings = {
     speedGrowthPerWave: number;
     restSeconds: number;
     firstWaveDelay: number;
+    /** Every wave whose number is a multiple of this ends with a boss. */
+    bossEvery: number;
   };
   fx: {
     /** Turns off screen shake, hit flash and muzzle flash. Particles and the pylon pulse stay. */
@@ -50,6 +52,7 @@ export const defaultSettings: Settings = {
     speedGrowthPerWave: 0.05,
     restSeconds: 3,
     firstWaveDelay: 1.5,
+    bossEvery: 5,
   },
   fx: {
     reducedMotion: false,

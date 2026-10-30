@@ -7,7 +7,7 @@ export type InputFrame = {
   fire: boolean;
 };
 
-export type EnemyKind = "crawler" | "dasher" | "splitter" | "splitling" | "shielded";
+export type EnemyKind = "crawler" | "dasher" | "splitter" | "splitling" | "shielded" | "boss";
 
 /** `shove` is a knockback velocity in px/s that decays each tick. */
 export type Drone = { pos: Vec; aim: Vec; cooldown: number; shove: Vec };
@@ -20,13 +20,18 @@ export type Dash =
 
 /** `facing` is a unit vector. A shielded bug's shield covers its front half. */
 type BugBody = { id: number; pos: Vec; hp: number; latched: boolean; facing: Vec };
-export type Bug = (BugBody & { kind: Exclude<EnemyKind, "dasher"> }) | (BugBody & { kind: "dasher"; dash: Dash });
+/** `broodIn` is seconds until the boss's next brood; it only counts down once the boss enrages. */
+export type Bug =
+  | (BugBody & { kind: Exclude<EnemyKind, "dasher" | "boss"> })
+  | (BugBody & { kind: "dasher"; dash: Dash })
+  | (BugBody & { kind: "boss"; dash: Dash; broodIn: number });
 
 export type Bullet = { id: number; pos: Vec; vel: Vec; ttl: number };
 
-/** A wave is either spawning bugs or resting before the next wave begins. */
+/** A wave spawns bugs, then on boss waves fights the boss, then rests before the next wave begins. */
 export type WaveState =
   | { phase: "spawning"; number: number; remaining: number; nextSpawnIn: number }
+  | { phase: "boss"; number: number }
   | { phase: "resting"; number: number; nextWaveIn: number };
 
 export type Phase = "playing" | "gameOver";
@@ -56,4 +61,6 @@ export type GameEvent =
   | { type: "pylonHit"; integrity: number }
   | { type: "droneHit"; pos: Vec }
   | { type: "shieldBlocked"; pos: Vec }
+  | { type: "bossSpawned"; wave: number; pos: Vec }
+  | { type: "bossEnraged"; pos: Vec }
   | { type: "gameOver"; score: number; wave: number; kills: number };

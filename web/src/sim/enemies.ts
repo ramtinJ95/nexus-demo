@@ -1,4 +1,4 @@
-import type { EnemyKind } from "./types";
+import type { Bug, EnemyKind } from "./types";
 
 export type DashBehavior = {
   /** The drone must be this close for a dasher to wind up. */
@@ -9,6 +9,16 @@ export type DashBehavior = {
   lungeSpeed: number;
   /** Knockback speed given to the drone on contact, in px/s. */
   shove: number;
+  /** The charge direction is fixed when the windup starts, so the windup is a telegraph the player can step out of. */
+  locksAim?: true;
+};
+
+export type BossPhase = 1 | 2;
+
+export type BossBehavior = {
+  /** Phase 2 starts once hp is at or below this fraction of max hp. */
+  enrageAt: number;
+  phases: Record<BossPhase, { charge: DashBehavior; brood?: { kind: EnemyKind; count: number; everySeconds: number } }>;
 };
 
 /** Optional behavior entries define the behavior by their presence. */
@@ -30,6 +40,7 @@ export type EnemyType = {
   dash?: DashBehavior;
   splitsInto?: { kind: EnemyKind; count: number };
   shield?: true;
+  boss?: BossBehavior;
 };
 
 export const enemyTypes: Record<EnemyKind, EnemyType> = {
@@ -74,7 +85,34 @@ export const enemyTypes: Record<EnemyKind, EnemyType> = {
     intro: "hit it from behind",
     shield: true,
   },
+  boss: {
+    radius: 34,
+    speed: 38,
+    hp: 40,
+    drainPerSecond: 10,
+    color: "#ff3355",
+    legs: 8,
+    jitter: 0.25,
+    firstWave: null,
+    spawnWeight: 0,
+    boss: {
+      enrageAt: 0.5,
+      phases: {
+        1: { charge: { range: 2000, stalkSeconds: 2.2, windupSeconds: 1, lungeSeconds: 0.7, lungeSpeed: 560, shove: 720, locksAim: true } },
+        2: {
+          charge: { range: 2000, stalkSeconds: 1.2, windupSeconds: 0.6, lungeSeconds: 0.6, lungeSpeed: 720, shove: 820, locksAim: true },
+          brood: { kind: "splitling", count: 3, everySeconds: 3.5 },
+        },
+      },
+    },
+  },
 };
+
+/** Derived from hp, so the phase can never disagree with the health bar. */
+export function bossPhase(bug: Extract<Bug, { kind: "boss" }>): BossPhase {
+  const boss = enemyTypes.boss.boss!;
+  return bug.hp / enemyTypes.boss.hp <= boss.enrageAt ? 2 : 1;
+}
 
 export const enemyKinds = Object.keys(enemyTypes) as EnemyKind[];
 

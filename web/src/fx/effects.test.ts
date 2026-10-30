@@ -92,6 +92,21 @@ describe("effects", () => {
     expect(fx.particles).toHaveLength(settings.fx.particles.perHit + settings.fx.particles.perDeath);
   });
 
+  it("an enraged boss erupts in its own tint and shakes the camera, except under reduced motion", () => {
+    const enraged: GameEvent = { type: "bossEnraged", pos: { x: 400, y: 300 } };
+    const fx = createEffects(1);
+    applyEvent(fx, enraged, settings);
+    expect(fx.particles.length).toBeGreaterThan(settings.fx.particles.perDeath);
+    expect(fx.particles.some((p) => p.tint === "boss")).toBe(true);
+    expect(Math.hypot(shakeOffset(fx, settings).x, shakeOffset(fx, settings).y)).toBeGreaterThan(1);
+
+    const calm = createEffects(1);
+    applyEvent(calm, enraged, reduced);
+    applyEvent(calm, { type: "bossSpawned", wave: 5, pos: { x: 0, y: 0 } }, reduced);
+    expect(calm.particles).toHaveLength(fx.particles.length);
+    expect(shakeOffset(calm, reduced)).toEqual({ x: 0, y: 0 });
+  });
+
   it("replays identically from the same seed and events", () => {
     const play = (seed: number) => {
       const fx = createEffects(seed);

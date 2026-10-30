@@ -83,6 +83,8 @@ Read the game through these stable handles:
 | `[data-testid="setting-reduced-motion"]`, `[data-testid="setting-colorblind"]` | reduced motion and colorblind-safe colors checkboxes |
 | `[data-testid="game"]` with `data-enemy-kinds` | the enemy kinds on the field now, sorted and space-separated |
 | `[data-testid="hud-new-enemy"]` with `data-kind` | the banner for a kind that debuts this wave |
+| `[data-testid="hud-boss"]` with `data-phase`, `data-move`, `data-hp`, `data-x`, `data-y` | the boss health bar, shown while a boss lives. Phase `1` or `2`, the charge state (`stalk`, `windup`, `lunge`), health, and position in arena coordinates |
+| `[data-testid="hud-boss-phase"]`, `[data-testid="hud-boss-bar"]` | the boss phase label and the bar, whose width is the share of boss health left |
 | `[data-testid="start-daily"]` | starts today's daily challenge. Its label is `Daily` and the UTC date |
 | `[data-testid="game"]` with `data-mode` | `classic` or `daily` |
 | `[data-testid="hud-mode"]` | `DAILY` and the date in a daily run. Hidden in classic |

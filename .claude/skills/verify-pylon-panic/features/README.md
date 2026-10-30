@@ -33,6 +33,7 @@ Each feature file starts with an H1 title and one paragraph on what the player s
 | --- | --- | --- |
 | [Core loop](./core-loop.md) | `core-loop` | moving, aiming, shooting, waves, HUD, pylon drain, game over, restart |
 | [Enemy variety](./enemy-variety.md) | `enemy-dasher`, `enemy-splitter`, `enemy-shielded` | wave debuts, dasher lunge, splitter split, shielded bug hit from behind, mixed waves |
+| [Boss bug](./boss.md) | `boss` | every fifth wave ending with a boss, its health bar, the telegraphed charge, phase 1 and the enraged phase 2 with broods, the wave clearing after it dies |
 | [Game feel](./game-feel.md) | `game-feel` | hit sparks, death bursts, hit flash, muzzle flash, screen shake and pylon glow pulse on damage, reduced motion |
 | [Title and settings](./title-settings.md) | `title-settings` | title screen and logo, how to play, settings panel (music and effects volumes, reduced motion, colorblind palette) kept across reloads, pause and resume on Escape |
 | [Music and audio](./music-audio.md) | `music-audio` | audio silent until the first input, wave music that rises with the wave and stops on pause, title and game over, event sounds, separate music and effects volumes |

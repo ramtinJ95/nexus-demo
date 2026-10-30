@@ -25,7 +25,7 @@ function flank(state: GameState, s: Settings): InputFrame {
   return { move, aim: target.pos, fire: true };
 }
 
-function placeBug(state: GameState, kind: Exclude<EnemyKind, "dasher">, pos: Vec): Bug {
+function placeBug(state: GameState, kind: Exclude<EnemyKind, "dasher" | "boss">, pos: Vec): Bug {
   const center = pylonCenter(settings);
   const d = dist(center, pos);
   const bug: Bug = { id: state.nextId++, kind, pos, hp: enemyTypes[kind].hp, latched: false, facing: { x: (center.x - pos.x) / d, y: (center.y - pos.y) / d } };
@@ -33,7 +33,7 @@ function placeBug(state: GameState, kind: Exclude<EnemyKind, "dasher">, pos: Vec
   return bug;
 }
 
-type Spawn = { wave: number; kind: EnemyKind; tick: number; pos: Vec; events: GameEvent[] };
+type Spawn = { wave: number; phase: GameState["wave"]["phase"]; kind: EnemyKind; tick: number; pos: Vec; events: GameEvent[] };
 
 /** Circles the arena on a fixed script, shooting in bursts at the bug nearest the pylon. */
 function roam(state: GameState): InputFrame {
@@ -54,7 +54,7 @@ function runSturdy(seed: number, waves: number, policy: (state: GameState) => In
     for (const bug of state.bugs) {
       if (seen.has(bug.id)) continue;
       seen.add(bug.id);
-      spawns.push({ wave: state.wave.number, kind: bug.kind, tick: state.tick, pos: { ...bug.pos }, events: tickEvents });
+      spawns.push({ wave: state.wave.number, phase: state.wave.phase, kind: bug.kind, tick: state.tick, pos: { ...bug.pos }, events: tickEvents });
     }
   }
   return { spawns, state, events };
@@ -64,7 +64,7 @@ describe("enemy variety", () => {
   it("waves introduce new kinds one at a time, each debuting as its wave's first bug", () => {
     const { spawns, state } = runSturdy(21, 5);
     expect(state.wavesSurvived).toBe(5);
-    const kindsIn = (wave: number) => new Set(spawns.filter((s) => s.wave === wave && s.kind !== "splitling").map((s) => s.kind));
+    const kindsIn = (wave: number) => new Set(spawns.filter((s) => s.wave === wave && s.kind !== "splitling" && s.kind !== "boss").map((s) => s.kind));
     const allowed: EnemyKind[][] = [["crawler"], ["crawler", "dasher"], ["crawler", "dasher", "splitter"], ["crawler", "dasher", "splitter", "shielded"]];
     for (let wave = 1; wave <= 5; wave++) {
       const kinds = allowed[Math.min(wave, 4) - 1]!;
@@ -75,7 +75,7 @@ describe("enemy variety", () => {
     const firstOf = (wave: number) => spawns.find((s) => s.wave === wave)?.kind;
     expect([1, 2, 3, 4].map(firstOf)).toEqual(["crawler", "dasher", "splitter", "shielded"]);
 
-    const splitlings = spawns.filter((s) => s.kind === "splitling");
+    const splitlings = spawns.filter((s) => s.kind === "splitling" && s.phase !== "boss");
     expect(splitlings.length).toBeGreaterThan(0);
     for (const s of splitlings) {
       const parentDeath = s.events.find((e) => e.type === "bugKilled" && e.kind === "splitter" && dist(e.pos, s.pos) <= 2 * enemyTypes.splitter.radius);

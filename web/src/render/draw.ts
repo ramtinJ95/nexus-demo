@@ -1,8 +1,8 @@
 import { fixedTints, shakeOffset, type Effects } from "../fx/effects";
-import { enemyTypes, type EnemyType } from "../sim/enemies";
+import { bossPhase, enemyTypes, type EnemyType } from "../sim/enemies";
 import type { Settings } from "../sim/settings";
 import { pylonCenter } from "../sim/step";
-import type { Bug, EnemyKind, GameState } from "../sim/types";
+import type { Bug, EnemyKind, GameState, Vec } from "../sim/types";
 import { withAlpha, type Palette } from "./palette";
 import { fitViewport, type Viewport } from "./viewport";
 
@@ -37,7 +37,7 @@ export function createRenderer(canvas: HTMLCanvasElement, settings: Settings): R
       ctx.translate(shake.x, shake.y);
       drawArena(ctx, settings, palette);
       drawPylon(ctx, state, settings, palette, now, fx.pylonPulse / settings.fx.pylonPulseSeconds);
-      for (const bug of state.bugs) drawBug(ctx, bug, state, palette, fx.hitFlashes.has(bug.id));
+      for (const bug of state.bugs) drawBug(ctx, bug, state, settings, palette, fx.hitFlashes.has(bug.id));
       drawParticles(ctx, fx, palette);
       drawBullets(ctx, state, palette);
       drawDrone(ctx, state, settings, palette, fx.muzzleFlash / settings.fx.muzzleFlashSeconds);
@@ -127,10 +127,11 @@ function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
 
 const DARK = "#04050c";
 
-type BodyDrawer = (ctx: CanvasRenderingContext2D, bug: Bug, r: number, fill: string, tick: number) => void;
+/** `blink` is the on beat of a windup flash. Reduced motion holds it on, so the warning stays without flashing. */
+type BodyDrawer = (ctx: CanvasRenderingContext2D, bug: Bug, r: number, fill: string, tick: number, blink: boolean) => void;
 
 /** Leg length as a fraction of the crawler's, so a slim or fat body isn't drowned out by its legs. */
-const legReach: Partial<Record<EnemyKind, number>> = { dasher: 0.7, splitter: 0.8 };
+const legReach: Partial<Record<EnemyKind, number>> = { dasher: 0.7, splitter: 0.8, boss: 0.85 };
 
 const bodies: Record<EnemyKind, BodyDrawer> = {
   crawler(ctx, _bug, r, fill) {
@@ -191,7 +192,98 @@ const bodies: Record<EnemyKind, BodyDrawer> = {
     ctx.arc(0, 0, r * 1.05, -Math.PI / 2, Math.PI / 2);
     ctx.stroke();
   },
+  boss(ctx, bug, r, fill, tick, blink) {
+    if (bug.kind !== "boss") return;
+    const enraged = bossPhase(bug) === 2;
+    const pulse = 0.5 + 0.5 * Math.sin(tick / 4);
+    const body = bug.dash.phase === "windup" && blink ? "#ffffff" : fill;
+    glow(ctx, fill, enraged ? 30 + pulse * 30 : 20);
+    ctx.strokeStyle = body;
+    ctx.lineWidth = r * 0.16;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    for (const side of [-1, 1]) {
+      ctx.moveTo(r * 0.8, side * r * 0.3);
+      ctx.quadraticCurveTo(r * 1.4, side * r * 0.62, r * 1.7, side * r * 0.2);
+    }
+    ctx.stroke();
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.ellipse(r * 0.62, 0, r * 0.36, r * 0.42, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.2, 0, r * 0.88, r * 0.72, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = DARK;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(r * 0.3, 0);
+    ctx.lineTo(-r * 1.05, 0);
+    ctx.moveTo(r * 0.28, -r * 0.4);
+    ctx.quadraticCurveTo(r * 0.38, 0, r * 0.28, r * 0.4);
+    ctx.stroke();
+    if (enraged) {
+      glow(ctx, "#ffffff", 10 + pulse * 14);
+      ctx.strokeStyle = withAlpha("#fff0c8", 0.55 + pulse * 0.45);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (const side of [-1, 1]) {
+        ctx.moveTo(-r * 0.05, side * r * 0.12);
+        ctx.lineTo(-r * 0.35, side * r * 0.42);
+        ctx.lineTo(-r * 0.3, side * r * 0.58);
+        ctx.moveTo(-r * 0.6, side * r * 0.05);
+        ctx.lineTo(-r * 0.75, side * r * 0.32);
+        ctx.lineTo(-r * 0.95, side * r * 0.36);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    ctx.fillStyle = enraged ? "#fff0c8" : DARK;
+    ctx.beginPath();
+    ctx.ellipse(r * 0.78, -r * 0.2, 3.5, 2.2, 0.5, 0, Math.PI * 2);
+    ctx.ellipse(r * 0.78, r * 0.2, 3.5, 2.2, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+  },
 };
+
+/** Distance from `from` along the unit vector `dir` to the arena's border. */
+function toEdge(from: Vec, dir: Vec, settings: Settings): number {
+  const { width, height } = settings.arena;
+  const tx = dir.x > 1e-9 ? (width - from.x) / dir.x : dir.x < -1e-9 ? -from.x / dir.x : Infinity;
+  const ty = dir.y > 1e-9 ? (height - from.y) / dir.y : dir.y < -1e-9 ? -from.y / dir.y : Infinity;
+  return Math.min(tx, ty);
+}
+
+/** The charge lane is drawn in the bug's rotated frame, so it runs along +x. */
+function drawChargeLane(ctx: CanvasRenderingContext2D, bug: Bug, r: number, color: string, tick: number, settings: Settings): void {
+  const length = toEdge(bug.pos, bug.facing, settings);
+  const lit = settings.fx.reducedMotion || tick % 12 < 7;
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = withAlpha(color, lit ? 0.2 : 0.08);
+  ctx.fillRect(0, -r, length, 2 * r);
+  ctx.strokeStyle = withAlpha(color, lit ? 0.8 : 0.35);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, -r);
+  ctx.lineTo(length, -r);
+  ctx.moveTo(0, r);
+  ctx.lineTo(length, r);
+  ctx.stroke();
+  const gap = 48;
+  const drift = settings.fx.reducedMotion ? 0 : (tick * 3) % gap;
+  ctx.strokeStyle = withAlpha(color, lit ? 0.7 : 0.3);
+  ctx.lineWidth = 4;
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  for (let x = r * 1.8 + drift; x < length - 10; x += gap) {
+    ctx.moveTo(x - 12, -r * 0.45);
+    ctx.lineTo(x, 0);
+    ctx.lineTo(x - 12, r * 0.45);
+  }
+  ctx.stroke();
+}
 
 function eyes(ctx: CanvasRenderingContext2D, x: number, spread: number, size: number): void {
   ctx.fillStyle = DARK;
@@ -206,7 +298,7 @@ function drawLegs(ctx: CanvasRenderingContext2D, bug: Bug, type: EnemyType, tick
   const scurry = bug.latched ? 0.6 : 0.35;
   const sweep = bug.kind === "dasher" ? -r * 0.7 : 0;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = Math.max(2, type.radius / 10);
   ctx.beginPath();
   const pairs = type.legs / 2;
   for (let i = 0; i < pairs; i++) {
@@ -222,7 +314,7 @@ function drawLegs(ctx: CanvasRenderingContext2D, bug: Bug, type: EnemyType, tick
   ctx.stroke();
 }
 
-function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, state: GameState, palette: Palette, flash: boolean): void {
+function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, state: GameState, settings: Settings, palette: Palette, flash: boolean): void {
   const type = enemyTypes[bug.kind];
   const r = type.radius;
   const tick = state.tick;
@@ -241,10 +333,11 @@ function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, state: GameState, pale
     ctx.setLineDash([]);
   }
   ctx.rotate(Math.atan2(bug.facing.y, bug.facing.x));
-  if (bug.kind === "dasher" && bug.dash.phase === "lunge") {
+  if (bug.kind === "boss" && bug.dash.phase === "windup") drawChargeLane(ctx, bug, r, palette.enemies.boss, tick, settings);
+  if ("dash" in bug && bug.dash.phase === "lunge") {
     ctx.shadowBlur = 0;
     for (let i = 1; i <= 3; i++) {
-      ctx.fillStyle = withAlpha(palette.enemies.dasher, 0.35 / i);
+      ctx.fillStyle = withAlpha(palette.enemies[bug.kind], 0.35 / i);
       ctx.beginPath();
       ctx.ellipse(-r * 1.1 * i, 0, r * 0.9, r * 0.3, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -253,7 +346,7 @@ function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, state: GameState, pale
   const color = flash ? "#ffffff" : palette.enemies[bug.kind];
   glow(ctx, color, flash ? 28 : bug.latched ? 22 : 12);
   drawLegs(ctx, bug, type, tick, color);
-  bodies[bug.kind](ctx, bug, r, bug.latched && tick % 20 < 10 ? "#ffffff" : color, tick);
+  bodies[bug.kind](ctx, bug, r, bug.latched && tick % 20 < 10 ? "#ffffff" : color, tick, settings.fx.reducedMotion || tick % 6 < 3);
   ctx.restore();
 }
 

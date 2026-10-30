@@ -80,7 +80,7 @@ const game = startGame({
   },
 });
 
-for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit", "shieldBlocked"] as const) {
+for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit", "shieldBlocked", "bossSpawned", "bossEnraged"] as const) {
   game.on(type, (event) => fxEvents.push(event));
 }
 for (const type of soundedEvents) game.on(type, audio.play);
