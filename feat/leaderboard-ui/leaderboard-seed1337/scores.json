@@ -5,84 +5,84 @@
       "name": "RIVAL-1",
       "score": 40,
       "wave": 6,
-      "createdAt": "2026-10-30T10:38:35.030Z"
+      "createdAt": "2026-10-30T12:28:20.719Z"
     },
     {
       "id": 2,
       "name": "RIVAL-2",
       "score": 26,
       "wave": 4,
-      "createdAt": "2026-10-30T10:38:35.046Z"
+      "createdAt": "2026-10-30T12:28:20.744Z"
     },
     {
       "id": 3,
       "name": "RIVAL-3",
       "score": 17,
       "wave": 3,
-      "createdAt": "2026-10-30T10:38:35.057Z"
+      "createdAt": "2026-10-30T12:28:20.768Z"
     },
     {
       "id": 4,
       "name": "RIVAL-4",
       "score": 11,
       "wave": 2,
-      "createdAt": "2026-10-30T10:38:35.070Z"
+      "createdAt": "2026-10-30T12:28:20.783Z"
     },
     {
       "id": 12,
       "name": "WARDS",
       "score": 7,
       "wave": 2,
-      "createdAt": "2026-10-30T10:39:12.007Z"
+      "createdAt": "2026-10-30T12:28:58.391Z"
     },
     {
       "id": 5,
       "name": "RIVAL-5",
       "score": 7,
       "wave": 1,
-      "createdAt": "2026-10-30T10:38:35.081Z"
+      "createdAt": "2026-10-30T12:28:20.803Z"
     },
     {
       "id": 6,
       "name": "RIVAL-6",
       "score": 4,
       "wave": 1,
-      "createdAt": "2026-10-30T10:38:35.092Z"
+      "createdAt": "2026-10-30T12:28:20.821Z"
     },
     {
       "id": 7,
       "name": "RIVAL-7",
       "score": 2,
       "wave": 1,
-      "createdAt": "2026-10-30T10:38:35.107Z"
+      "createdAt": "2026-10-30T12:28:20.845Z"
     },
     {
       "id": 8,
       "name": "RIVAL-8",
       "score": 1,
       "wave": 1,
-      "createdAt": "2026-10-30T10:38:35.125Z"
+      "createdAt": "2026-10-30T12:28:20.861Z"
     },
     {
       "id": 9,
       "name": "RIVAL-9",
       "score": 0,
       "wave": 1,
-      "createdAt": "2026-10-30T10:38:35.138Z"
+      "createdAt": "2026-10-30T12:28:20.881Z"
     },
     {
       "id": 10,
       "name": "RIVAL-10",
       "score": 0,
       "wave": 1,
-      "createdAt": "2026-10-30T10:38:35.149Z"
+      "createdAt": "2026-10-30T12:28:20.903Z"
     },
     {
       "id": 11,
       "name": "RIVAL-11",
       "score": 0,
       "wave": 1,
-      "createdAt": "2026-10-30T10:38:35.165Z"
+      "createdAt": "2026-10-30T12:28:20.926Z"
     }
   ]
 }

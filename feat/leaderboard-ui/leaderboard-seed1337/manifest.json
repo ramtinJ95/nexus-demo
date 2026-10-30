@@ -2,7 +2,7 @@
   "journey": "leaderboard",
   "feature": "leaderboard.md",
   "seed": "1337",
-  "url": "http://127.0.0.1:39479/?seed=1337",
+  "url": "http://127.0.0.1:40043/?seed=1337",
   "passed": true,
   "error": null,
   "checks": [
@@ -115,5 +115,5 @@
     "leaderboard.webm",
     "scores.json"
   ],
-  "capturedAt": "2026-10-30T10:39:54.853Z"
+  "capturedAt": "2026-10-30T12:29:43.237Z"
 }
