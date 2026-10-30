@@ -3,7 +3,12 @@ import type { Settings } from "../sim/settings";
 import type { EnemyKind, GameEvent, Vec } from "../sim/types";
 
 /** A tint, not a color, so the palette resolves it at draw time and a palette switch recolors live sparks. */
-export type Particle = { pos: Vec; vel: Vec; age: number; life: number; tint: EnemyKind | "white"; size: number };
+/** Tints whose color is the same in every palette. */
+export const fixedTints = { white: "#ffffff", shield: "#bfe6ff" } as const;
+
+export type Tint = EnemyKind | keyof typeof fixedTints;
+
+export type Particle = { pos: Vec; vel: Vec; age: number; life: number; tint: Tint; size: number };
 
 /**
  * Cosmetic state derived from sim events. It follows the sim's determinism rule but has its own RNG stream,
@@ -44,6 +49,9 @@ export function applyEvent(fx: Effects, event: GameEvent, settings: Settings): v
     case "bugKilled":
       burst(fx, event.pos, event.kind, settings.fx.particles.perDeath, 1.4, settings);
       break;
+    case "shieldBlocked":
+      burst(fx, event.pos, "shield", settings.fx.particles.perHit, 0.8, settings);
+      break;
     case "shotFired":
       if (motion) fx.muzzleFlash = settings.fx.muzzleFlashSeconds;
       break;
@@ -54,7 +62,7 @@ export function applyEvent(fx: Effects, event: GameEvent, settings: Settings): v
   }
 }
 
-function burst(fx: Effects, at: Vec, kind: EnemyKind, count: number, power: number, settings: Settings): void {
+function burst(fx: Effects, at: Vec, tint: Exclude<Tint, "white">, count: number, power: number, settings: Settings): void {
   const { speed, lifeSeconds, max } = settings.fx.particles;
   for (let i = 0; i < count; i++) {
     const angle = nextRandom(fx) * Math.PI * 2;
@@ -64,7 +72,7 @@ function burst(fx: Effects, at: Vec, kind: EnemyKind, count: number, power: numb
       vel: { x: Math.cos(angle) * v, y: Math.sin(angle) * v },
       age: 0,
       life: lifeSeconds * (0.6 + 0.4 * nextRandom(fx)),
-      tint: i % 4 === 0 ? "white" : kind,
+      tint: i % 4 === 0 ? "white" : tint,
       size: 1.5 + 1.5 * nextRandom(fx),
     });
   }

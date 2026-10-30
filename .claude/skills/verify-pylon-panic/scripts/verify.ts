@@ -79,6 +79,7 @@ async function capture(name: string, seed: string, runName: string): Promise<str
 
   const checks: { claim: string; ok: boolean }[] = [];
   const pageErrors: string[] = [];
+  const allowedConsoleErrors: RegExp[] = [];
   let clipFrom: number | undefined;
   let clipTo: number | undefined;
   const browser = await launchBrowser();
@@ -93,7 +94,8 @@ async function capture(name: string, seed: string, runName: string): Promise<str
   page.on("console", (m) => {
     const url = m.location().url;
     // Chromium asks for /favicon.ico on its own when it shows a non-HTML document such as an API response.
-    if (m.type() === "error" && !url.endsWith("/favicon.ico")) pageErrors.push(`${m.text()} ${url}`.trim());
+    const text = `${m.text()} ${url}`.trim();
+    if (m.type() === "error" && !url.endsWith("/favicon.ico") && !allowedConsoleErrors.some((p) => p.test(text))) pageErrors.push(text);
   });
 
   let failure: unknown;
@@ -121,6 +123,9 @@ async function capture(name: string, seed: string, runName: string): Promise<str
         checks.push({ claim, ok });
         console.log(`${ok ? "PASS" : "FAIL"} ${claim}`);
         if (!ok) throw new Error(`check failed: ${claim}`);
+      },
+      allowConsoleError(pattern) {
+        allowedConsoleErrors.push(pattern);
       },
       clip: { start: () => void (clipFrom = elapsed()), stop: () => void (clipTo = elapsed()) },
     });

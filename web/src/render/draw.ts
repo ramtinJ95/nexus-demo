@@ -1,8 +1,8 @@
-import { shakeOffset, type Effects } from "../fx/effects";
-import { enemyTypes } from "../sim/enemies";
+import { fixedTints, shakeOffset, type Effects } from "../fx/effects";
+import { enemyTypes, type EnemyType } from "../sim/enemies";
 import type { Settings } from "../sim/settings";
 import { pylonCenter } from "../sim/step";
-import type { Bug, GameState, Vec } from "../sim/types";
+import type { Bug, EnemyKind, GameState } from "../sim/types";
 import { withAlpha, type Palette } from "./palette";
 import { fitViewport, type Viewport } from "./viewport";
 
@@ -37,7 +37,7 @@ export function createRenderer(canvas: HTMLCanvasElement, settings: Settings): R
       ctx.translate(shake.x, shake.y);
       drawArena(ctx, settings, palette);
       drawPylon(ctx, state, settings, palette, now, fx.pylonPulse / settings.fx.pylonPulseSeconds);
-      for (const bug of state.bugs) drawBug(ctx, bug, palette, state.tick, pylonCenter(settings), fx.hitFlashes.has(bug.id));
+      for (const bug of state.bugs) drawBug(ctx, bug, state, palette, fx.hitFlashes.has(bug.id));
       drawParticles(ctx, fx, palette);
       drawBullets(ctx, state, palette);
       drawDrone(ctx, state, settings, palette, fx.muzzleFlash / settings.fx.muzzleFlashSeconds);
@@ -125,17 +125,86 @@ function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
   ctx.restore();
 }
 
-function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, palette: Palette, tick: number, target: Vec, flash: boolean): void {
-  const type = enemyTypes[bug.kind];
-  const r = type.radius;
-  const heading = Math.atan2(target.y - bug.pos.y, target.x - bug.pos.x);
-  const scurry = bug.latched ? 0.6 : 0.35;
+const DARK = "#04050c";
 
-  ctx.save();
-  ctx.translate(bug.pos.x, bug.pos.y);
-  ctx.rotate(heading);
-  const color = flash ? "#ffffff" : palette.enemies[bug.kind];
-  glow(ctx, color, flash ? 28 : bug.latched ? 22 : 12);
+type BodyDrawer = (ctx: CanvasRenderingContext2D, bug: Bug, r: number, fill: string, tick: number) => void;
+
+/** Leg length as a fraction of the crawler's, so a slim or fat body isn't drowned out by its legs. */
+const legReach: Partial<Record<EnemyKind, number>> = { dasher: 0.7, splitter: 0.8 };
+
+const bodies: Record<EnemyKind, BodyDrawer> = {
+  crawler(ctx, _bug, r, fill) {
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.75, r * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    eyes(ctx, r * 0.45, r * 0.18, 1.8);
+  },
+  dasher(ctx, bug, r, fill, tick) {
+    const windup = bug.kind === "dasher" && bug.dash.phase === "windup";
+    ctx.fillStyle = windup && tick % 6 < 3 ? "#ffffff" : fill;
+    ctx.save();
+    if (windup) ctx.scale(0.7, 1.15);
+    ctx.beginPath();
+    ctx.moveTo(r * 1.7, 0);
+    ctx.lineTo(-r * 0.2, r * 0.55);
+    ctx.lineTo(-r * 1.1, 0);
+    ctx.lineTo(-r * 0.2, -r * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    eyes(ctx, r * 0.5, r * 0.13, 1.5);
+  },
+  splitter(ctx, _bug, r, fill) {
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.36, r * 0.8, r * 0.48, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, r * 0.36, r * 0.8, r * 0.48, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = DARK;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.9, 0);
+    ctx.lineTo(r * 0.9, 0);
+    ctx.stroke();
+    eyes(ctx, r * 0.55, r * 0.36, 2);
+  },
+  splitling(ctx, _bug, r, fill) {
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.85, r * 0.55, 0, 0, Math.PI * 2);
+    ctx.fill();
+    eyes(ctx, r * 0.45, r * 0.2, 1.3);
+  },
+  shielded(ctx, _bug, r, fill) {
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.15, 0, r * 0.65, r * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    eyes(ctx, r * 0.3, r * 0.18, 1.8);
+    glow(ctx, "#bfe6ff", 22);
+    ctx.strokeStyle = "#dff3ff";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.05, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+  },
+};
+
+function eyes(ctx: CanvasRenderingContext2D, x: number, spread: number, size: number): void {
+  ctx.fillStyle = DARK;
+  ctx.beginPath();
+  ctx.arc(x, -spread, size, 0, Math.PI * 2);
+  ctx.arc(x, spread, size, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawLegs(ctx: CanvasRenderingContext2D, bug: Bug, type: EnemyType, tick: number, color: string): void {
+  const r = type.radius * (legReach[bug.kind] ?? 1);
+  const scurry = bug.latched ? 0.6 : 0.35;
+  const sweep = bug.kind === "dasher" ? -r * 0.7 : 0;
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -144,22 +213,47 @@ function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, palette: Palette, tick
     const along = ((i - (pairs - 1) / 2) / pairs) * r * 1.4;
     for (const side of [-1, 1]) {
       const wiggle = Math.sin(tick * scurry + bug.id * 1.7 + i * 2.1 + side) * type.jitter;
-      const knee = { x: along + Math.cos(side * (Math.PI / 2) + wiggle) * r * 0.9, y: side * r * 0.9 };
+      const knee = { x: along + Math.cos(side * (Math.PI / 2) + wiggle) * r * 0.9 + sweep * 0.5, y: side * r * 0.9 };
       ctx.moveTo(along * 0.6, 0);
       ctx.lineTo(knee.x, knee.y);
-      ctx.lineTo(knee.x + wiggle * r * 0.6, knee.y + side * r * 0.55);
+      ctx.lineTo(knee.x + wiggle * r * 0.6 + sweep, knee.y + side * r * 0.55);
     }
   }
   ctx.stroke();
-  ctx.fillStyle = bug.latched && tick % 20 < 10 ? "#ffffff" : color;
-  ctx.beginPath();
-  ctx.ellipse(0, 0, r * 0.75, r * 0.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#04050c";
-  ctx.beginPath();
-  ctx.arc(r * 0.45, -r * 0.18, 1.8, 0, Math.PI * 2);
-  ctx.arc(r * 0.45, r * 0.18, 1.8, 0, Math.PI * 2);
-  ctx.fill();
+}
+
+function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, state: GameState, palette: Palette, flash: boolean): void {
+  const type = enemyTypes[bug.kind];
+  const r = type.radius;
+  const tick = state.tick;
+
+  ctx.save();
+  ctx.translate(bug.pos.x, bug.pos.y);
+  if (bug.kind === "dasher" && bug.dash.phase === "windup") {
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = withAlpha(palette.enemies.dasher, 0.45);
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(state.drone.pos.x - bug.pos.x, state.drone.pos.y - bug.pos.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.rotate(Math.atan2(bug.facing.y, bug.facing.x));
+  if (bug.kind === "dasher" && bug.dash.phase === "lunge") {
+    ctx.shadowBlur = 0;
+    for (let i = 1; i <= 3; i++) {
+      ctx.fillStyle = withAlpha(palette.enemies.dasher, 0.35 / i);
+      ctx.beginPath();
+      ctx.ellipse(-r * 1.1 * i, 0, r * 0.9, r * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  const color = flash ? "#ffffff" : palette.enemies[bug.kind];
+  glow(ctx, color, flash ? 28 : bug.latched ? 22 : 12);
+  drawLegs(ctx, bug, type, tick, color);
+  bodies[bug.kind](ctx, bug, r, bug.latched && tick % 20 < 10 ? "#ffffff" : color, tick);
   ctx.restore();
 }
 
@@ -170,7 +264,7 @@ function drawParticles(ctx: CanvasRenderingContext2D, fx: Effects, palette: Pale
   ctx.shadowBlur = 0;
   for (const p of fx.particles) {
     const fade = 1 - p.age / p.life;
-    ctx.fillStyle = p.tint === "white" ? "#ffffff" : palette.enemies[p.tint];
+    ctx.fillStyle = p.tint in fixedTints ? fixedTints[p.tint as keyof typeof fixedTints] : palette.enemies[p.tint as EnemyKind];
     ctx.globalAlpha = fade * 0.25;
     ctx.beginPath();
     ctx.arc(p.pos.x, p.pos.y, p.size * 2.5, 0, Math.PI * 2);

@@ -4,6 +4,8 @@ import { startGame } from "./game";
 import { createEffects, frameEffects } from "./fx/effects";
 import { createHud } from "./hud";
 import { createInput } from "./input";
+import { newRunId } from "./leaderboard";
+import { createLeaderboardPanel } from "./leaderboard-panel";
 import { createMenus } from "./menus";
 import { loadPrefs, savePrefs, type Prefs } from "./prefs";
 import { createRenderer } from "./render/draw";
@@ -63,14 +65,15 @@ const game = startGame({
     frameEffects(fx, fxEvents, dt, settings);
     fxEvents = [];
     lastFrame = now;
-    renderer.draw(state, now, fx, palettes[prefs.palette]);
-    hud.update(state);
+    const palette = palettes[prefs.palette];
+    renderer.draw(state, now, fx, palette);
+    hud.update(state, palette);
     const shaking = String(fx.trauma > 0);
     if (root.dataset.shake !== shaking) root.dataset.shake = shaking;
   },
 });
 
-for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit"] as const) {
+for (const type of ["bugHit", "bugKilled", "shotFired", "pylonHit", "shieldBlocked"] as const) {
   game.on(type, (event) => fxEvents.push(event));
 }
 for (const type of ["shotFired", "bugKilled", "pylonHit", "gameOver"] as const) game.on(type, sfx.play);
@@ -102,16 +105,20 @@ function redrawLogo(): void {
   if (!logo.closest("[hidden]")) drawLogo(logo, palettes[prefs.palette]);
 }
 
+const leaderboard = createLeaderboardPanel(root.querySelector('[data-testid="leaderboard"]')!);
+game.on("gameOver", ({ score, wave }) => leaderboard.show({ id: newRunId(), score, wave }));
+
 function restart(): void {
   game.restart();
   fx = createEffects(seed);
   fxEvents = [];
+  leaderboard.reset();
 }
 
 root.querySelector('[data-testid="restart"]')!.addEventListener("click", restart);
 window.addEventListener("keydown", (e) => {
   sfx.resume();
-  if (e.code === "KeyR" && !e.repeat && screen.kind === "playing") restart();
+  if (e.code === "KeyR" && !e.repeat && screen.kind === "playing" && !(e.target instanceof HTMLInputElement)) restart();
   if (e.code === "Escape") act("escape");
   const onTitle = screen.kind === "menu" && screen.menu === "title" && !screen.settings;
   // A focused button already acts on Enter; starting here too would swallow its click.

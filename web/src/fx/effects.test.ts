@@ -27,6 +27,14 @@ describe("effects", () => {
     expect(fx.particles).toHaveLength(0);
   });
 
+  it("a shot blocked by a shield sparks where it hit, without flashing the bug", () => {
+    const fx = createEffects(1);
+    applyEvent(fx, { type: "shieldBlocked", pos: { x: 500, y: 100 } }, settings);
+    expect(fx.particles).toHaveLength(settings.fx.particles.perHit);
+    for (const p of fx.particles) expect(p.pos).toEqual({ x: 500, y: 100 });
+    expect(fx.hitFlashes.size).toBe(0);
+  });
+
   it("caps the particle count", () => {
     const fx = createEffects(1);
     for (let i = 0; i < 100; i++) applyEvent(fx, kill, settings);

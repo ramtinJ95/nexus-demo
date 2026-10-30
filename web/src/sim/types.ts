@@ -7,11 +7,20 @@ export type InputFrame = {
   fire: boolean;
 };
 
-export type EnemyKind = "crawler";
+export type EnemyKind = "crawler" | "dasher" | "splitter" | "splitling" | "shielded";
 
-export type Drone = { pos: Vec; aim: Vec; cooldown: number };
+/** `shove` is a knockback velocity in px/s that decays each tick. */
+export type Drone = { pos: Vec; aim: Vec; cooldown: number; shove: Vec };
 
-export type Bug = { id: number; kind: EnemyKind; pos: Vec; hp: number; latched: boolean };
+/** A dasher stalks the pylon, stops to wind up when the drone is near, then lunges in a straight line. */
+export type Dash =
+  | { phase: "stalk"; left: number }
+  | { phase: "windup"; left: number }
+  | { phase: "lunge"; left: number; dir: Vec };
+
+/** `facing` is a unit vector. A shielded bug's shield covers its front half. */
+type BugBody = { id: number; pos: Vec; hp: number; latched: boolean; facing: Vec };
+export type Bug = (BugBody & { kind: Exclude<EnemyKind, "dasher"> }) | (BugBody & { kind: "dasher"; dash: Dash });
 
 export type Bullet = { id: number; pos: Vec; vel: Vec; ttl: number };
 
@@ -45,4 +54,6 @@ export type GameEvent =
   | { type: "bugHit"; id: number; kind: EnemyKind; pos: Vec }
   | { type: "bugKilled"; kind: EnemyKind; pos: Vec }
   | { type: "pylonHit"; integrity: number }
+  | { type: "droneHit"; pos: Vec }
+  | { type: "shieldBlocked"; pos: Vec }
   | { type: "gameOver"; score: number; wave: number; kills: number };

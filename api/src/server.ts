@@ -65,7 +65,8 @@ const routes: Routes = {
       if (!body.ok) return body.reply;
       const parsed = parseScoreEntry(body.value);
       if (!parsed.ok) return fail(400, parsed.error);
-      return { status: 201, body: { score: store.insert(parsed.entry) } };
+      const { created, ...submitted } = store.submit(parsed.entry, parsed.runId, LIMIT_DEFAULT);
+      return { status: created ? 201 : 200, body: submitted };
     },
   },
 };
