@@ -127,7 +127,8 @@ function drawPylon(ctx: CanvasRenderingContext2D, state: GameState, settings: Se
 
 const DARK = "#04050c";
 
-type BodyDrawer = (ctx: CanvasRenderingContext2D, bug: Bug, r: number, fill: string, tick: number) => void;
+/** `blink` is the on beat of a windup flash. Reduced motion holds it on, so the warning stays without flashing. */
+type BodyDrawer = (ctx: CanvasRenderingContext2D, bug: Bug, r: number, fill: string, tick: number, blink: boolean) => void;
 
 /** Leg length as a fraction of the crawler's, so a slim or fat body isn't drowned out by its legs. */
 const legReach: Partial<Record<EnemyKind, number>> = { dasher: 0.7, splitter: 0.8, boss: 0.85 };
@@ -191,11 +192,11 @@ const bodies: Record<EnemyKind, BodyDrawer> = {
     ctx.arc(0, 0, r * 1.05, -Math.PI / 2, Math.PI / 2);
     ctx.stroke();
   },
-  boss(ctx, bug, r, fill, tick) {
+  boss(ctx, bug, r, fill, tick, blink) {
     if (bug.kind !== "boss") return;
     const enraged = bossPhase(bug) === 2;
     const pulse = 0.5 + 0.5 * Math.sin(tick / 4);
-    const body = bug.dash.phase === "windup" && tick % 6 < 3 ? "#ffffff" : fill;
+    const body = bug.dash.phase === "windup" && blink ? "#ffffff" : fill;
     glow(ctx, fill, enraged ? 30 + pulse * 30 : 20);
     ctx.strokeStyle = body;
     ctx.lineWidth = r * 0.16;
@@ -345,7 +346,7 @@ function drawBug(ctx: CanvasRenderingContext2D, bug: Bug, state: GameState, sett
   const color = flash ? "#ffffff" : palette.enemies[bug.kind];
   glow(ctx, color, flash ? 28 : bug.latched ? 22 : 12);
   drawLegs(ctx, bug, type, tick, color);
-  bodies[bug.kind](ctx, bug, r, bug.latched && tick % 20 < 10 ? "#ffffff" : color, tick);
+  bodies[bug.kind](ctx, bug, r, bug.latched && tick % 20 < 10 ? "#ffffff" : color, tick, settings.fx.reducedMotion || tick % 6 < 3);
   ctx.restore();
 }
 
