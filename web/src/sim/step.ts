@@ -48,7 +48,7 @@ export function step(state: GameState, input: InputFrame, settings: Settings): G
   state.tick++;
 
   moveDrone(state, input, settings, dt);
-  fire(state, input, settings, dt);
+  fire(state, input, settings, dt, events);
   advanceWave(state, settings, dt, events);
   moveBugs(state, settings, dt, events);
   moveBullets(state, settings, dt, events);
@@ -81,18 +81,20 @@ function moveDrone(state: GameState, input: InputFrame, settings: Settings, dt: 
   if (len > 1e-6) drone.aim = { x: dx / len, y: dy / len };
 }
 
-function fire(state: GameState, input: InputFrame, settings: Settings, dt: number): void {
+function fire(state: GameState, input: InputFrame, settings: Settings, dt: number, events: GameEvent[]): void {
   const { drone } = state;
   drone.cooldown = Math.max(0, drone.cooldown - dt);
   if (!input.fire || drone.cooldown > 0) return;
   drone.cooldown = settings.drone.fireCooldown;
   const muzzle = settings.drone.radius + 6;
+  const pos = { x: drone.pos.x + drone.aim.x * muzzle, y: drone.pos.y + drone.aim.y * muzzle };
   state.bullets.push({
     id: state.nextId++,
-    pos: { x: drone.pos.x + drone.aim.x * muzzle, y: drone.pos.y + drone.aim.y * muzzle },
+    pos,
     vel: { x: drone.aim.x * settings.bullet.speed, y: drone.aim.y * settings.bullet.speed },
     ttl: settings.bullet.ttl,
   });
+  events.push({ type: "shotFired", pos: { ...pos }, dir: { ...drone.aim } });
 }
 
 function advanceWave(state: GameState, settings: Settings, dt: number, events: GameEvent[]): void {
@@ -165,6 +167,7 @@ function moveBullets(state: GameState, settings: Settings, dt: number, events: G
       continue;
     }
     target.hp -= settings.bullet.damage;
+    events.push({ type: "bugHit", id: target.id, kind: target.kind, pos: { ...bullet.pos } });
     if (target.hp <= 0) {
       state.kills++;
       events.push({ type: "bugKilled", kind: target.kind, pos: { ...target.pos } });

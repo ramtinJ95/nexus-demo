@@ -110,6 +110,44 @@ describe("combat", () => {
   });
 });
 
+describe("fx events", () => {
+  const calm: Settings = { ...settings, waves: { ...settings.waves, firstWaveDelay: 1e9 } };
+
+  it("emits one shotFired per bullet, from the muzzle along the aim", () => {
+    const state = createGame(8, calm);
+    const seen = new Set<number>();
+    const events: GameEvent[] = [];
+    for (let i = 0; i < tps; i++) {
+      events.push(...step(state, { ...idle(state), fire: true }, calm));
+      for (const b of state.bullets) seen.add(b.id);
+    }
+    const shots = events.filter((e) => e.type === "shotFired");
+    expect(shots.length).toBeGreaterThan(1);
+    expect(shots.length).toBe(seen.size);
+    const muzzle = calm.drone.radius + 6;
+    expect(shots[0]).toEqual({
+      type: "shotFired",
+      pos: { x: state.drone.pos.x, y: state.drone.pos.y - muzzle },
+      dir: { x: 0, y: -1 },
+    });
+  });
+
+  it("emits bugHit for every hit and bugKilled on the lethal one", () => {
+    const state = createGame(8, calm);
+    const { x, y } = state.drone.pos;
+    state.bugs.push({ id: 999, kind: "crawler", pos: { x, y: y - 200 }, hp: enemyTypes.crawler.hp, latched: false });
+    const events: GameEvent[] = [];
+    while (!events.some((e) => e.type === "bugKilled") && state.tick < 3 * tps) {
+      const bug = state.bugs[0]!;
+      events.push(...step(state, { move: { x: 0, y: 0 }, aim: bug.pos, fire: true }, calm));
+    }
+    const fx = events.filter((e) => e.type === "bugHit" || e.type === "bugKilled");
+    expect(fx.map((e) => e.type)).toEqual([...Array(enemyTypes.crawler.hp).fill("bugHit"), "bugKilled"]);
+    expect(fx[0]).toMatchObject({ type: "bugHit", id: 999, kind: "crawler" });
+    expect(state.bugs).toHaveLength(0);
+  });
+});
+
 describe("game over", () => {
   it("fires once and freezes the sim", () => {
     const state = createGame(3, settings);
