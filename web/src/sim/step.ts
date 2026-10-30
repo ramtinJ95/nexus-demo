@@ -268,9 +268,11 @@ function moveDasher(
   const travel = dash.lungeSpeed * speedScale * dt;
   const r = type.radius;
   bug.facing = d.dir;
+  const room = dash.locksAim ? roomAlong(bug.pos, d.dir, r, settings) : Infinity;
+  const stride = Math.min(travel, room);
   bug.pos = {
-    x: clamp(bug.pos.x + d.dir.x * travel, r, settings.arena.width - r),
-    y: clamp(bug.pos.y + d.dir.y * travel, r, settings.arena.height - r),
+    x: clamp(bug.pos.x + d.dir.x * stride, r, settings.arena.width - r),
+    y: clamp(bug.pos.y + d.dir.y * stride, r, settings.arena.height - r),
   };
   const center = pylonCenter(settings);
   const reach = settings.pylon.radius + r;
@@ -286,7 +288,15 @@ function moveDasher(
     return;
   }
   d.left -= dt;
-  if (d.left <= 0) bug.dash = { phase: "stalk", left: dash.stalkSeconds };
+  if (d.left <= 0 || stride < travel) bug.dash = { phase: "stalk", left: dash.stalkSeconds };
+}
+
+/** How far `pos` can travel along the unit vector `dir` before a body of radius `r` meets a wall. A locked charge stops there instead of sliding along the wall out of its telegraphed lane. */
+function roomAlong(pos: Vec, dir: Vec, r: number, settings: Settings): number {
+  const { width, height } = settings.arena;
+  const tx = dir.x > 1e-9 ? (width - r - pos.x) / dir.x : dir.x < -1e-9 ? (r - pos.x) / dir.x : Infinity;
+  const ty = dir.y > 1e-9 ? (height - r - pos.y) / dir.y : dir.y < -1e-9 ? (r - pos.y) / dir.y : Infinity;
+  return Math.max(0, Math.min(tx, ty));
 }
 
 function moveBullets(state: GameState, settings: Settings, dt: number, events: GameEvent[]): void {

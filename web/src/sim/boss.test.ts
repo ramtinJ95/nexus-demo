@@ -134,6 +134,29 @@ describe("boss bug", () => {
     expect(events.some((e) => e.type === "droneHit")).toBe(false);
   });
 
+  it("a charge that meets a wall stops there instead of sliding out of its lane", () => {
+    const state = createGame(1, calm);
+    const boss = placeBoss(state, { x: 200, y: 560 }, 0);
+    state.drone.pos = { x: 330, y: 700 };
+    while (boss.dash.phase === "stalk") step(state, still(state.drone.pos), calm);
+    const aimed = dir(state.drone.pos, boss.pos);
+
+    const events: GameEvent[] = [];
+    const right = { move: { x: 1, y: 0 }, aim: boss.pos, fire: false };
+    for (let i = 0; boss.dash.phase === "windup"; i++) events.push(...step(state, i < 0.45 * tps ? right : still(boss.pos), calm));
+    expect(state.drone.pos.x).toBeGreaterThan(450);
+
+    let prev = { ...boss.pos };
+    while (boss.dash.phase === "lunge") {
+      events.push(...step(state, still(boss.pos), calm));
+      const moved = dist(boss.pos, prev);
+      if (moved > 0) expect(((boss.pos.x - prev.x) * aimed.x + (boss.pos.y - prev.y) * aimed.y) / moved).toBeGreaterThan(0.999);
+      prev = { ...boss.pos };
+    }
+    expect(boss.pos.y).toBeCloseTo(calm.arena.height - enemyTypes.boss.radius);
+    expect(events.some((e) => e.type === "droneHit")).toBe(false);
+  });
+
   it("a charge that reaches the drone shoves it along the charge", () => {
     const state = createGame(1, calm);
     const boss = placeBoss(state, { x: 200, y: 150 }, 0);
