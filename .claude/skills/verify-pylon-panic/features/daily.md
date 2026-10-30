@@ -4,7 +4,7 @@ The title screen has a Daily button labeled with today's UTC date, such as `Dail
 
 ## Sub-features
 
-- `daily-start` starts a daily run from the `start-daily` button. Start and Enter still start a classic run with the URL seed.
+- `daily-start` starts a daily run from the `start-daily` button. A title left open across midnight UTC relabels the button to the new day. Start and Enter still start a classic run with the URL seed.
 - `daily-seed` derives the seed from the UTC date alone, so two players on one UTC day share it and the next day gets a new one. `hud-seed` shows that seed, not the URL seed.
 - `daily-hud` sets `data-mode="daily"` on the game root and shows `hud-mode` with `DAILY` and the date. In classic, `data-mode="classic"` and `hud-mode` is hidden.
 - `daily-restart` keeps the daily seed and mode when R or Restart starts the next run.
@@ -28,14 +28,14 @@ Run `npm run verify -- run daily`. The journey does the following.
 - **Seed.** It posts `CLASSIC` (999) to the classic board, `DAILY-1` (1) to 2026-10-30, and `YESTERDAY` (500) to 2026-10-29 through `/api/scores`.
 - **Title.** It fixes the page clock to 2026-10-30T09:00Z with `page.clock.setFixedTime` and loads the title screen. `start-daily` reads `Daily 2026-10-30`. Screenshot `01-title`.
 - **Start.** The GIF covers the click on `start-daily` and a few seconds of firing in a circle. `data-mode` is `daily`, `hud-mode` reads `DAILY 2026-10-30`, and `hud-seed` differs from 1337. Screenshot `02-daily-run`.
-- **Second player.** It opens a new browser context fixed to 22:30Z the same day and starts the daily run. Its `hud-seed` equals the first. A third context fixed to 2026-10-31 gets a different seed.
+- **Second player.** It opens a new browser context fixed to 22:30Z the same day and starts the daily run. Its `hud-seed` equals the first. A third context fixed to 2026-10-31 gets a different seed. A fourth loads the title at 23:59:59Z, moves its clock past midnight, and checks that the button relabels to 2026-10-31 and starts that day's seed.
 - **Board.** It lets the run fall, submits `DAYLY`, and waits for `data-state="board"`. `leaderboard-title` reads `Daily 2026-10-30`, `data-board` is `daily`, and the rows hold `DAYLY` (mine) and `DAILY-1` but not `CLASSIC` or `YESTERDAY`. Saved as `board.json`. Screenshot `03-daily-board`.
 - **API.** `GET /api/scores?day=2026-10-30` lists `DAYLY` (`daily-scores.json`), and `GET /api/scores` does not (`classic-scores.json`).
 - **Restart.** R starts a new run with the same seed and `data-mode="daily"`. Screenshot `04-daily-restart`.
 
 ## Gotchas
 
-- The day is the UTC date, not the local one. Set the clock before the page loads, because the button's label is read at load.
+- The day is the UTC date, not the local one. The button relabels within a second of the clock passing midnight UTC, and a click always starts the day it shows.
 - The title screen appears once per page load, so switching between classic and daily means reloading the page.
 - The API accepts any real date. It does not check that the day is today.
 - Same-seed determinism of the waves is covered by Vitest in `web/src/daily.test.ts`. Playwright input timing varies by a few frames, so the journey compares seeds across players, not arenas.

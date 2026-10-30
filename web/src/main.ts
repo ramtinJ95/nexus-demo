@@ -1,7 +1,7 @@
 import "./style.css";
 import "./touch.css";
 import { createSfx } from "./audio";
-import { dailySeed, dayOf, type Mode } from "./daily";
+import { dailySeed, dayOf, type Day, type Mode } from "./daily";
 import { startGame } from "./game";
 import { createEffects, frameEffects } from "./fx/effects";
 import { createHud } from "./hud";
@@ -88,7 +88,7 @@ const menus = createMenus(root, {
     savePrefs(storage, prefs);
   },
   daily() {
-    const day = dayOf(new Date());
+    const day = labelToday();
     mode = { kind: "daily", day };
     showMode();
     restart(dailySeed(day));
@@ -98,7 +98,17 @@ const menus = createMenus(root, {
 
 const dailyButton = root.querySelector<HTMLElement>('[data-testid="start-daily"]')!;
 const hudMode = root.querySelector<HTMLElement>('[data-testid="hud-mode"]')!;
-dailyButton.textContent = `Daily ${dayOf(new Date())}`;
+
+/** The label and the run read one `dayOf` call, so a click never starts a day other than the one shown. */
+function labelToday(): Day {
+  const day = dayOf(new Date());
+  const label = `Daily ${day}`;
+  if (dailyButton.textContent !== label) dailyButton.textContent = label;
+  return day;
+}
+// A title screen left open, or a tab resumed, across midnight UTC relabels within a second.
+setInterval(labelToday, 1000);
+labelToday();
 
 function showMode(): void {
   root.dataset["mode"] = mode.kind;

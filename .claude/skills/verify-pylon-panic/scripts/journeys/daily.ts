@@ -29,6 +29,28 @@ async function dailySeedOn(page: Page, webUrl: string, now: string): Promise<str
   }
 }
 
+/** Loads the title before midnight UTC, lets the clock pass midnight, and reads the label and the seed the click starts. */
+async function dailyAcrossMidnight(page: Page, webUrl: string): Promise<{ before: string | null; after: string | null; seed: string | null }> {
+  const other = await page.context().browser()!.newContext({ viewport: { width: 1280, height: 720 } });
+  try {
+    const player = await other.newPage();
+    await player.clock.setFixedTime(new Date(`${DAY}T23:59:59Z`));
+    await player.goto(`${webUrl}/?seed=1337`);
+    await player.locator('[data-testid="game"][data-screen="title"]').waitFor();
+    const button = player.getByTestId("start-daily");
+    const before = await button.textContent();
+    await player.clock.setFixedTime(new Date("2026-10-31T00:00:01Z"));
+    await player.locator('[data-testid="start-daily"]', { hasText: "Daily 2026-10-31" }).waitFor({ timeout: 5_000 }).catch(() => {});
+    const after = await button.textContent();
+    await button.click();
+    await player.locator('[data-testid="game"][data-screen="playing"]').waitFor();
+    await nextFrame(player);
+    return { before, after, seed: await player.getByTestId("hud-seed").textContent() };
+  } finally {
+    await other.close();
+  }
+}
+
 export const daily: Journey = {
   feature: "daily.md",
   description: "Start the daily challenge, see two players on one UTC day share its seed, and submit to that day's board.",
@@ -73,6 +95,10 @@ export const daily: Journey = {
     check(sameDay === mySeed, `a second player later the same UTC day gets the same seed ${sameDay}`);
     const nextDay = await dailySeedOn(page, webUrl, "2026-10-31T09:00:00Z");
     check(nextDay !== null && nextDay !== mySeed, `a player on 2026-10-31 gets a different seed ${nextDay}`);
+    const midnight = await dailyAcrossMidnight(page, webUrl);
+    check(midnight.before === `Daily ${DAY}`, "a title loaded at 23:59:59Z offers 2026-10-30");
+    check(midnight.after === "Daily 2026-10-31", "after midnight UTC the open title relabels the button to 2026-10-31");
+    check(midnight.seed === nextDay, `clicking the relabeled button starts the 2026-10-31 seed ${midnight.seed}`);
 
     await page.locator('[data-testid="game"][data-phase="gameOver"]').waitFor({ timeout: 120_000 });
     const finalScore = number(await page.getByTestId("final-score").textContent());
