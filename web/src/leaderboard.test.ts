@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
+import type { Day } from "./daily";
 import { boardRows, newRunId, panelAfter, submitScore, TIMEOUT_MS, type ScoreRow } from "./leaderboard";
 
 const row = (id: number, score: number): ScoreRow => ({ id, name: `p${id}`, score, wave: 1 });
@@ -16,7 +17,7 @@ function fakeFetch(...replies: (Response | Error)[]) {
   return { fetch, bodies };
 }
 
-const run = { id: "run-0000000a", score: 21, wave: 4 };
+const run = { id: "run-0000000a", score: 21, wave: 4, day: null };
 
 test("run ids are fresh and match the API's runId rule", () => {
   const ids = new Set(Array.from({ length: 50 }, newRunId));
@@ -47,7 +48,14 @@ describe("submitScore", () => {
     const mine = row(7, 21);
     const { fetch, bodies } = fakeFetch(json(201, { score: mine, rank: 1, top: [mine] }));
     expect(await submitScore(fetch, "Ada", run)).toEqual({ kind: "saved", mine, rank: 1, top: [mine] });
-    expect(bodies).toEqual([{ name: "Ada", score: 21, wave: 4, runId: "run-0000000a" }]);
+    expect(bodies).toEqual([{ name: "Ada", score: 21, wave: 4, runId: "run-0000000a", day: null }]);
+  });
+
+  test("a daily run posts its day so the score lands on that day's board", async () => {
+    const mine = row(7, 21);
+    const { fetch, bodies } = fakeFetch(json(201, { score: mine, rank: 1, top: [mine] }));
+    await submitScore(fetch, "Ada", { ...run, day: "2026-10-30" as Day });
+    expect(bodies).toEqual([{ name: "Ada", score: 21, wave: 4, runId: "run-0000000a", day: "2026-10-30" }]);
   });
 
   test("a retry after a lost reply sends the same run id and takes the stored row", async () => {

@@ -29,6 +29,7 @@
           <span class="new-enemy-hint"></span>
         </div>
         <div class="stat seed">
+          <span class="mode" data-testid="hud-mode" hidden></span>
           <span class="label">Seed</span>
           <span class="value" data-testid="hud-seed"></span>
         </div>
@@ -48,6 +49,7 @@
             <button type="submit" data-testid="leaderboard-submit">Submit score</button>
           </form>
           <p class="notice" data-testid="leaderboard-notice" role="status"></p>
+          <h2 data-testid="leaderboard-title" hidden></h2>
           <ol data-testid="leaderboard-board" hidden></ol>
         </section>
         <button type="button" data-testid="restart">Restart</button>
@@ -64,6 +66,7 @@
         </ul>
         <div class="menu-buttons">
           <button type="button" data-testid="start">Start</button>
+          <button type="button" data-testid="start-daily">Daily</button>
           <button type="button" data-testid="title-settings">Settings</button>
         </div>
         <span class="hint">or press Enter</span>

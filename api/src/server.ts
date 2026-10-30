@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
-import { parseScoreEntry } from "./scores.ts";
+import { DAY_ERROR, isDay, parseScoreEntry } from "./scores.ts";
 import type { ScoreStore } from "./scores.ts";
 
 const MAX_BODY_BYTES = 4096;
@@ -58,7 +58,9 @@ const routes: Routes = {
     GET: (_req, url, store) => {
       const limit = parseLimit(url.searchParams.get("limit"));
       if (limit === undefined) return fail(400, `limit must be an integer from 1 to ${LIMIT_MAX}`);
-      return { status: 200, body: { scores: store.top(limit) } };
+      const day = url.searchParams.get("day");
+      if (day !== null && !isDay(day)) return fail(400, DAY_ERROR);
+      return { status: 200, body: { scores: store.top(limit, day) } };
     },
     POST: async (req, _url, store) => {
       const body = await readJsonBody(req);

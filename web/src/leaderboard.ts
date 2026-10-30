@@ -1,8 +1,10 @@
+import type { Day } from "./daily";
+
 export const BOARD_SIZE = 10;
 export const NAME_MAX = 16;
 
-/** `id` is sent with every attempt, so the API stores a retried run once. */
-export type Run = { readonly id: string; readonly score: number; readonly wave: number };
+/** `id` is sent with every attempt, so the API stores a retried run once. `day` names the daily board, null the classic one. */
+export type Run = { readonly id: string; readonly score: number; readonly wave: number; readonly day: Day | null };
 
 export function newRunId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(12));
@@ -58,7 +60,7 @@ export async function submitScore(fetch: Fetch, name: string, run: Run): Promise
     const posted = await fetch("/api/scores", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, score: run.score, wave: run.wave, runId: run.id }),
+      body: JSON.stringify({ name, score: run.score, wave: run.wave, runId: run.id, day: run.day }),
       signal: deadline.signal,
     });
     if (posted.status >= 500) return { kind: "offline" };

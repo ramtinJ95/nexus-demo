@@ -1,6 +1,7 @@
 import type { Journey } from "../journey.ts";
 import { boss } from "./boss.ts";
 import { coreLoop } from "./core-loop.ts";
+import { daily } from "./daily.ts";
 import { enemyDasher, enemyShielded, enemySplitter } from "./enemy-variety.ts";
 import { gameFeel } from "./game-feel.ts";
 import { leaderboard } from "./leaderboard.ts";
@@ -11,6 +12,7 @@ import { touchLandscape, touchPortrait } from "./touch-controls.ts";
 export const journeys: Record<string, Journey> = {
   boss,
   "core-loop": coreLoop,
+  daily,
   "enemy-dasher": enemyDasher,
   "enemy-splitter": enemySplitter,
   "enemy-shielded": enemyShielded,
