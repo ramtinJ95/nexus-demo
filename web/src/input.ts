@@ -71,7 +71,7 @@ export function createInput(root: HTMLElement, canvas: HTMLCanvasElement, viewpo
     mouseFiring = true;
   };
   const onTouchDown = (e: PointerEvent) => {
-    if (e.pointerType !== "touch" || (e.target instanceof Element && e.target.closest(".game-over"))) return;
+    if (e.pointerType !== "touch" || (e.target instanceof Element && e.target.closest(".game-over, .menu"))) return;
     showTouch();
     e.preventDefault();
     if (press(sticks, e.pointerId, local(e), root.clientWidth)) drawSticks(sticks);

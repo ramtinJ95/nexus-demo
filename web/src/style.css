@@ -184,6 +184,126 @@ body {
   opacity: 0.55;
 }
 
+.game[data-palette="colorblind"] {
+  --cyan: #56b4e9;
+  --magenta: #cc79a7;
+  --danger: #d55e00;
+}
+
+.menu {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: safe center;
+  justify-items: center;
+  gap: 18px;
+  overflow-y: auto;
+  background: rgba(2, 0, 10, 0.66);
+  backdrop-filter: blur(2px);
+  text-align: center;
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menu h1 {
+  margin: 0;
+  font-size: 48px;
+  letter-spacing: 0.14em;
+  color: #fff;
+  text-shadow: 0 0 18px var(--magenta), 0 0 40px var(--magenta);
+}
+
+.menu .logo {
+  width: min(560px, 90vw);
+  height: min(220px, 35vw);
+}
+
+.how-to-play {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+kbd {
+  padding: 1px 6px;
+  font: inherit;
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  text-shadow: 0 0 6px var(--cyan);
+}
+
+.menu-buttons {
+  display: flex;
+  gap: 14px;
+}
+
+.menu button {
+  margin-top: 6px;
+  padding: 10px 26px;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 0.16em;
+  color: var(--cyan);
+  background: transparent;
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--cyan) 50%, transparent), inset 0 0 14px color-mix(in srgb, var(--cyan) 25%, transparent);
+  cursor: pointer;
+}
+
+.menu button:hover,
+.menu button:focus-visible {
+  background: color-mix(in srgb, var(--cyan) 12%, transparent);
+  outline: none;
+}
+
+.settings-fields {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.field input {
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
+.field input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.field input[type="range"] {
+  width: 200px;
+}
+
+.field output {
+  min-width: 4ch;
+  color: #fff;
+  text-shadow: 0 0 8px var(--cyan);
+}
+
+.field input:disabled,
+.field input:disabled + span {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .leaderboard {
   display: grid;
   justify-items: center;

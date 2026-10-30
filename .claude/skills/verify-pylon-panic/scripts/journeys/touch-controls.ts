@@ -23,7 +23,7 @@ function touchJourney(orientation: "portrait" | "landscape", device: Device): Jo
       check((await root.getAttribute("data-touch")) === "true", "a touch device shows the virtual sticks");
       check((await stick("move").isVisible()) && (await stick("aim").isVisible()), "both sticks rest on screen before a touch");
 
-      const canvas = await box("canvas");
+      const canvas = await box('[data-testid="game"] > canvas');
       const hudBox = await box(".hud");
       check(await page.locator(".hud").evaluate((el) => el.scrollWidth <= el.clientWidth), "the HUD fits the screen width");
       if (orientation === "portrait") check(hudBox.y + hudBox.height <= canvas.y + 1, "in portrait the arena sits below the HUD");

@@ -1,9 +1,14 @@
-import { enemyTypes } from "../sim/enemies";
 import { nextRandom } from "../sim/rng";
 import type { Settings } from "../sim/settings";
-import type { GameEvent, Vec } from "../sim/types";
+import type { EnemyKind, GameEvent, Vec } from "../sim/types";
 
-export type Particle = { pos: Vec; vel: Vec; age: number; life: number; color: string; size: number };
+/** A tint, not a color, so the palette resolves it at draw time and a palette switch recolors live sparks. */
+/** Tints whose color is the same in every palette. */
+export const fixedTints = { white: "#ffffff", shield: "#bfe6ff" } as const;
+
+export type Tint = EnemyKind | keyof typeof fixedTints;
+
+export type Particle = { pos: Vec; vel: Vec; age: number; life: number; tint: Tint; size: number };
 
 /**
  * Cosmetic state derived from sim events. It follows the sim's determinism rule but has its own RNG stream,
@@ -34,20 +39,18 @@ export function createEffects(seed: number): Effects {
   };
 }
 
-const SHIELD_SPARK = "#bfe6ff";
-
 export function applyEvent(fx: Effects, event: GameEvent, settings: Settings): void {
   const motion = !settings.fx.reducedMotion;
   switch (event.type) {
     case "bugHit":
-      burst(fx, event.pos, enemyTypes[event.kind].color, settings.fx.particles.perHit, 1, settings);
+      burst(fx, event.pos, event.kind, settings.fx.particles.perHit, 1, settings);
       if (motion) fx.hitFlashes.set(event.id, settings.fx.hitFlashSeconds);
       break;
     case "bugKilled":
-      burst(fx, event.pos, enemyTypes[event.kind].color, settings.fx.particles.perDeath, 1.4, settings);
+      burst(fx, event.pos, event.kind, settings.fx.particles.perDeath, 1.4, settings);
       break;
     case "shieldBlocked":
-      burst(fx, event.pos, SHIELD_SPARK, settings.fx.particles.perHit, 0.8, settings);
+      burst(fx, event.pos, "shield", settings.fx.particles.perHit, 0.8, settings);
       break;
     case "shotFired":
       if (motion) fx.muzzleFlash = settings.fx.muzzleFlashSeconds;
@@ -59,7 +62,7 @@ export function applyEvent(fx: Effects, event: GameEvent, settings: Settings): v
   }
 }
 
-function burst(fx: Effects, at: Vec, color: string, count: number, power: number, settings: Settings): void {
+function burst(fx: Effects, at: Vec, tint: Exclude<Tint, "white">, count: number, power: number, settings: Settings): void {
   const { speed, lifeSeconds, max } = settings.fx.particles;
   for (let i = 0; i < count; i++) {
     const angle = nextRandom(fx) * Math.PI * 2;
@@ -69,7 +72,7 @@ function burst(fx: Effects, at: Vec, color: string, count: number, power: number
       vel: { x: Math.cos(angle) * v, y: Math.sin(angle) * v },
       age: 0,
       life: lifeSeconds * (0.6 + 0.4 * nextRandom(fx)),
-      color: i % 4 === 0 ? "#ffffff" : color,
+      tint: i % 4 === 0 ? "white" : tint,
       size: 1.5 + 1.5 * nextRandom(fx),
     });
   }

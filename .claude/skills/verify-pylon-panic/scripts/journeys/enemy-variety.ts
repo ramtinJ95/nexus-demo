@@ -23,7 +23,7 @@ function player(page: Page) {
   const patrolStart = Date.now();
   return {
     async start(): Promise<void> {
-      const box = await page.locator("canvas").boundingBox();
+      const box = await page.locator('[data-testid="game"] > canvas').boundingBox();
       if (!box) throw new Error("canvas has no layout box");
       const scale = Math.min(box.width / ARENA.width, box.height / ARENA.height);
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 4 * scale);

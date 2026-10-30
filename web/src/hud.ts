@@ -2,8 +2,9 @@ import { debutKind, enemyTypes } from "./sim/enemies";
 import type { Settings } from "./sim/settings";
 import { score } from "./sim/step";
 import type { GameState } from "./sim/types";
+import type { Palette } from "./render/palette";
 
-export type Hud = { update(state: GameState): void };
+export type Hud = { update(state: GameState, palette: Palette): void };
 
 export function createHud(root: HTMLElement, settings: Settings): Hud {
   const el = (id: string) => root.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
@@ -27,7 +28,7 @@ export function createHud(root: HTMLElement, settings: Settings): Hud {
   };
 
   return {
-    update(state) {
+    update(state, palette) {
       const integrity = Math.ceil(state.integrity);
       set(parts.score, String(score(state)));
       set(parts.wave, String(state.wave.number));
@@ -44,9 +45,9 @@ export function createHud(root: HTMLElement, settings: Settings): Hud {
       const debut = state.phase === "playing" ? debutKind(state.wave.number) : undefined;
       const intro = debut && enemyTypes[debut].intro;
       parts.newEnemy.hidden = !intro;
+      if (debut) parts.newEnemy.style.setProperty("--enemy-color", palette.enemies[debut]);
       if (debut && intro && parts.newEnemy.dataset["kind"] !== debut) {
         parts.newEnemy.dataset["kind"] = debut;
-        parts.newEnemy.style.setProperty("--enemy-color", enemyTypes[debut].color);
         set(newEnemyName, `NEW: ${debut.toUpperCase()}`);
         set(newEnemyHint, intro);
       }

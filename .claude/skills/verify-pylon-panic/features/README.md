@@ -34,6 +34,7 @@ Each feature file starts with an H1 title and one paragraph on what the player s
 | [Core loop](./core-loop.md) | `core-loop` | moving, aiming, shooting, waves, HUD, pylon drain, game over, restart |
 | [Enemy variety](./enemy-variety.md) | `enemy-dasher`, `enemy-splitter`, `enemy-shielded` | wave debuts, dasher lunge, splitter split, shielded bug hit from behind, mixed waves |
 | [Game feel](./game-feel.md) | `game-feel` | hit sparks, death bursts, hit flash, muzzle flash, screen shake and pylon glow pulse on damage, reduced motion |
+| [Title and settings](./title-settings.md) | `title-settings` | title screen and logo, how to play, settings panel (volume, reduced motion, colorblind palette) kept across reloads, pause and resume on Escape |
 | [Leaderboard](./leaderboard.md) | `leaderboard` | name entry on game over, submitting, the top 10 with the player's row highlighted, the API-down notice |
 | [Leaderboard API](./leaderboard-api.md) | `leaderboard-api` | health, listing, submitting, and validating scores |
 | [Touch controls](./touch-controls.md) | `touch-portrait`, `touch-landscape` | twin virtual sticks, auto-fire while aiming, phone layout in portrait and landscape, tap to restart |
