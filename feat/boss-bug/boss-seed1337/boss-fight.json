@@ -1,0 +1,10 @@
+{
+  "fightMs": 5436,
+  "enragedAfterMs": 3383,
+  "telegraphs": {
+    "1": true,
+    "2": true
+  },
+  "hpSamples": 13,
+  "lowestHp": 1
+}

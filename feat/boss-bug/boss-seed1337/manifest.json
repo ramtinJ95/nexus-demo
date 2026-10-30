@@ -1,0 +1,71 @@
+{
+  "journey": "boss",
+  "feature": "boss.md",
+  "seed": "1337",
+  "url": "http://127.0.0.1:44863/?seed=1337",
+  "passed": true,
+  "error": null,
+  "checks": [
+    {
+      "claim": "the drone holds the pylon until wave 5",
+      "ok": true
+    },
+    {
+      "claim": "the drone holds the pylon through wave 5's regular bugs",
+      "ok": true
+    },
+    {
+      "claim": "wave 5 ends with a boss",
+      "ok": true
+    },
+    {
+      "claim": "the boss arrives in wave 5",
+      "ok": true
+    },
+    {
+      "claim": "the boss starts in phase 1",
+      "ok": true
+    },
+    {
+      "claim": "the boss health bar starts full",
+      "ok": true
+    },
+    {
+      "claim": "the drone kills the boss before the pylon falls",
+      "ok": true
+    },
+    {
+      "claim": "the boss telegraphs a charge in phase 1",
+      "ok": true
+    },
+    {
+      "claim": "the boss enters phase 2 at half health",
+      "ok": true
+    },
+    {
+      "claim": "the boss telegraphs a charge in phase 2",
+      "ok": true
+    },
+    {
+      "claim": "the boss health bar goes away when the boss dies",
+      "ok": true
+    },
+    {
+      "claim": "wave 5 clears once the boss and its brood are dead",
+      "ok": true
+    }
+  ],
+  "pageErrors": [],
+  "artifacts": [
+    "01-boss-health-bar.png",
+    "02-boss-telegraph-phase-1.png",
+    "03-boss-phase-2.png",
+    "04-boss-telegraph-phase-2.png",
+    "05-wave-5-cleared.png",
+    "boss-fight.json",
+    "boss.gif",
+    "boss.mp4",
+    "boss.webm"
+  ],
+  "capturedAt": "2026-10-30T13:39:33.648Z"
+}
