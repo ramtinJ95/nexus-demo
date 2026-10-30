@@ -1,0 +1,23 @@
+{
+  "name": "pylon-panic",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "workspaces": [
+    "web",
+    "api"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces && tsc -p .claude/skills/verify-pylon-panic/scripts",
+    "test": "npm test --workspaces && node --test \".claude/skills/verify-pylon-panic/scripts/*.test.ts\"",
+    "build": "npm run build --workspaces --if-present",
+    "verify": "node .claude/skills/verify-pylon-panic/scripts/verify.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "playwright": "^1.64.1",
+    "typescript": "^7.0.2"
+  }
+}

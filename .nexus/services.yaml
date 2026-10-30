@@ -1,0 +1,18 @@
+services:
+  api:
+    command: exec node src/main.ts
+    cwd: api
+    port: 8787
+    env:
+      HOST: 127.0.0.1
+      PYLON_DB: api/.data/scores.db
+    health: /api/health
+  web:
+    command: exec node ../node_modules/vite/bin/vite.js
+    cwd: web
+    env:
+      API_URL: http://127.0.0.1:8787
+    health: /
+    preview:
+      title: Pylon Panic
+      description: The game, served by Vite. /api is proxied to the api service.

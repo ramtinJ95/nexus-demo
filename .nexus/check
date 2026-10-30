@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Exit 0 on pass, 1 on a real failure, 75 when the failure is transient and a retry may pass.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+if [ ! -d node_modules ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+  if ! out=$(npm ci --no-audit --no-fund 2>&1); then
+    echo "$out" >&2
+    if grep -qE 'ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|ECONNREFUSED|socket hang up|code E5[0-9][0-9]' <<<"$out"; then
+      echo "check: npm ci hit a network error" >&2
+      exit 75
+    fi
+    exit 1
+  fi
+fi
+
+for step in typecheck test build; do
+  echo "check: $step"
+  npm run --silent "$step" || { echo "check: $step failed" >&2; exit 1; }
+done
+echo "check: ok"

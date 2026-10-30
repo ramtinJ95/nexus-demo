@@ -1,0 +1,157 @@
+:root {
+  --cyan: #29f3ff;
+  --magenta: #ff2bd6;
+  --danger: #ff3b5c;
+  color-scheme: dark;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: #dffcff;
+  overflow: hidden;
+}
+
+.game {
+  position: fixed;
+  inset: 0;
+  user-select: none;
+}
+
+.game canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.hud {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  pointer-events: none;
+  text-shadow: 0 0 8px var(--cyan);
+  letter-spacing: 0.08em;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat .label {
+  font-size: 11px;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.stat .value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.countdown {
+  font-size: 11px;
+  color: var(--magenta);
+  text-shadow: 0 0 8px var(--magenta);
+  min-height: 1em;
+}
+
+.integrity-track {
+  width: 160px;
+  height: 6px;
+  margin-top: 4px;
+  background: rgba(41, 243, 255, 0.15);
+  box-shadow: 0 0 10px rgba(41, 243, 255, 0.4);
+}
+
+.integrity-bar {
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+.game[data-low="true"] .integrity-bar {
+  background: var(--danger);
+  box-shadow: 0 0 10px var(--danger);
+}
+
+.seed {
+  margin-left: auto;
+  text-align: right;
+}
+
+.seed .value {
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.game-over {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: rgba(2, 0, 10, 0.6);
+  text-align: center;
+}
+
+.game-over[hidden] {
+  display: none;
+}
+
+.game-over h1 {
+  margin: 0;
+  font-size: 56px;
+  letter-spacing: 0.14em;
+  color: #fff;
+  text-shadow: 0 0 18px var(--magenta), 0 0 40px var(--magenta);
+}
+
+.game-over p {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+}
+
+.game-over strong {
+  color: #fff;
+  text-shadow: 0 0 10px var(--cyan);
+}
+
+.game-over button {
+  margin-top: 10px;
+  padding: 10px 26px;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 0.16em;
+  color: var(--cyan);
+  background: transparent;
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 14px rgba(41, 243, 255, 0.5), inset 0 0 14px rgba(41, 243, 255, 0.25);
+  cursor: pointer;
+}
+
+.game-over button:hover {
+  background: rgba(41, 243, 255, 0.12);
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.55;
+}
