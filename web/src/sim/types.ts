@@ -41,6 +41,8 @@ export type GameState = {
 export type GameEvent =
   | { type: "waveStarted"; wave: number }
   | { type: "waveCleared"; wave: number }
+  | { type: "shotFired"; pos: Vec; dir: Vec }
+  | { type: "bugHit"; id: number; kind: EnemyKind; pos: Vec }
   | { type: "bugKilled"; kind: EnemyKind; pos: Vec }
   | { type: "pylonHit"; integrity: number }
   | { type: "gameOver"; score: number; wave: number; kills: number };
