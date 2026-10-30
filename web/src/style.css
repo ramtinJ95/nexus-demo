@@ -194,9 +194,10 @@ body {
   position: absolute;
   inset: 0;
   display: grid;
-  place-content: center;
+  place-content: safe center;
   justify-items: center;
   gap: 18px;
+  overflow-y: auto;
   background: rgba(2, 0, 10, 0.66);
   backdrop-filter: blur(2px);
   text-align: center;

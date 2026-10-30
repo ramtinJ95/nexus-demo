@@ -1,0 +1,175 @@
+.game {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+}
+
+.game-over {
+  place-content: safe center;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+.touch-controls {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+}
+
+.game[data-touch="true"][data-phase="playing"] .touch-controls {
+  display: block;
+}
+
+.stick {
+  --stick-color: 41, 243, 255;
+  position: absolute;
+  width: 112px;
+  height: 112px;
+  margin: -56px 0 0 -56px;
+  border: 2px solid rgba(var(--stick-color), 0.55);
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(var(--stick-color), 0.35), inset 0 0 14px rgba(var(--stick-color), 0.2);
+  opacity: 0.4;
+}
+
+.stick[data-side="aim"] {
+  --stick-color: 255, 43, 214;
+}
+
+.stick[data-active="true"] {
+  opacity: 1;
+}
+
+.stick[data-active="false"] {
+  top: calc(100% - 84px);
+}
+
+.stick[data-side="move"][data-active="false"] {
+  left: max(84px, 15%);
+}
+
+.stick[data-side="aim"][data-active="false"] {
+  left: min(calc(100% - 84px), 85%);
+}
+
+.stick::after {
+  position: absolute;
+  top: calc(100% + 6px);
+  width: 100%;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+  color: rgb(var(--stick-color));
+}
+
+.stick[data-active="false"][data-side="move"]::after {
+  content: "move";
+}
+
+.stick[data-active="false"][data-side="aim"]::after {
+  content: "aim + fire";
+}
+
+.knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  background: rgba(var(--stick-color), 0.35);
+  box-shadow: 0 0 16px rgba(var(--stick-color), 0.8);
+  transform: translate(var(--knob-x, 0), var(--knob-y, 0));
+}
+
+@media (max-width: 600px), (max-height: 500px) {
+  .hud {
+    top: 8px;
+    left: 12px;
+    right: 12px;
+    gap: 6px 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat .label {
+    font-size: 9px;
+  }
+
+  .stat .value {
+    font-size: 17px;
+  }
+
+  .seed .value {
+    font-size: 11px;
+  }
+
+  .integrity-track {
+    width: 80px;
+  }
+
+  .new-enemy {
+    order: 1;
+    padding: 3px 10px;
+  }
+
+  .new-enemy-name {
+    font-size: 13px;
+  }
+
+  .new-enemy-hint {
+    font-size: 9px;
+  }
+
+  .game-over {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .game-over h1 {
+    font-size: 34px;
+  }
+
+  .game-over p {
+    font-size: 14px;
+  }
+
+  .game-over button {
+    margin-top: 4px;
+  }
+
+  .leaderboard {
+    width: min(360px, 100%);
+    min-width: 0;
+  }
+
+  .leaderboard form {
+    width: 100%;
+  }
+
+  .leaderboard input {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+
+  .leaderboard button {
+    white-space: nowrap;
+  }
+
+  .leaderboard li {
+    grid-template-columns: 2.5em 1fr 3.5em 3em;
+    font-size: 12px;
+  }
+}
+
+/* A 16:9 arena letterboxed into a tall screen is a thin strip in the middle. Pin it under the HUD so the thumbs get the space below. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .game canvas {
+    height: auto;
+    aspect-ratio: 16 / 9;
+    margin-top: 76px;
+  }
+}

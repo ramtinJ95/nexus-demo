@@ -1,4 +1,5 @@
 import "./style.css";
+import "./touch.css";
 import { createSfx } from "./audio";
 import { startGame } from "./game";
 import { createEffects, frameEffects } from "./fx/effects";
@@ -45,7 +46,7 @@ let prefs = loadPrefs(storage, { volume: 0.6, reducedMotion: osReducedMotion, pa
 let screen: Screen = initialScreen;
 const settings = { ...defaultSettings, fx: { ...defaultSettings.fx } };
 const renderer = createRenderer(canvas, settings);
-const input = createInput(canvas, renderer.viewport);
+const input = createInput(root, canvas, renderer.viewport);
 const hud = createHud(root, settings);
 
 let fx = createEffects(seed);
@@ -58,7 +59,7 @@ const sfx = createSfx();
 const game = startGame({
   seed,
   settings,
-  readInput: input.read,
+  readInput: () => input.read(game.state.drone.pos),
   paused: true,
   onFrame(state, now) {
     const dt = game.paused ? 0 : Math.min(Math.max(0, (now - (lastFrame ?? now)) / 1000), MAX_FX_SECONDS);

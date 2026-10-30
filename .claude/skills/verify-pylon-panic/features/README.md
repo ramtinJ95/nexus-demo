@@ -11,7 +11,7 @@ This directory lists the player-facing features of Pylon Panic and how to prove 
 
 ## Driving conventions
 
-- Drive through real keyboard and mouse input only. Never call game code or set state from the page.
+- Drive through real keyboard, mouse, and touch input only. Never call game code or set state from the page.
 - Read state from `data-testid` handles. The table in `../SKILL.md` lists them.
 - Map arena coordinates (1280x720) to the page through the canvas bounding box.
 - Reach API state through the web origin's `/api` proxy, as the game does.
@@ -37,3 +37,4 @@ Each feature file starts with an H1 title and one paragraph on what the player s
 | [Title and settings](./title-settings.md) | `title-settings` | title screen and logo, how to play, settings panel (volume, reduced motion, colorblind palette) kept across reloads, pause and resume on Escape |
 | [Leaderboard](./leaderboard.md) | `leaderboard` | name entry on game over, submitting, the top 10 with the player's row highlighted, the API-down notice |
 | [Leaderboard API](./leaderboard-api.md) | `leaderboard-api` | health, listing, submitting, and validating scores |
+| [Touch controls](./touch-controls.md) | `touch-portrait`, `touch-landscape` | twin virtual sticks, auto-fire while aiming, phone layout in portrait and landscape, tap to restart |

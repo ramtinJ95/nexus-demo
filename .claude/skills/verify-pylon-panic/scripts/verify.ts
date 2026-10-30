@@ -83,9 +83,12 @@ async function capture(name: string, seed: string, runName: string): Promise<str
   let clipFrom: number | undefined;
   let clipTo: number | undefined;
   const browser = await launchBrowser();
+  const { width, height, touch = false } = journey.device ?? { width: 1280, height: 720 };
   const context = await browser.newContext({
-    viewport: { width: 1280, height: 720 },
-    recordVideo: { dir: out, size: { width: 1280, height: 720 } },
+    viewport: { width, height },
+    hasTouch: touch,
+    isMobile: touch,
+    recordVideo: { dir: out, size: { width, height } },
   });
   const page = await context.newPage();
   const t0 = performance.now();
